@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="checklists" id="common-checklists">
+    <div class="checklist">
+        <h3 class="checklist_name">Tasks</h3>
+        <div class="scroll_checklist">
+            {% for task in tasks %}
+            <input type="checkbox" id="{{task[0]}}" />{{task[1]}}<br />
+            {% endfor %}
+        </div>
+    </div>
+    <div class="checklist">
+        <h3 class="checklist_name">Datasets</h3>
+        <div class="scroll_checklist">
+            {% for dataset in datasets %}
+            <input type="checkbox" id="{{dataset[0]}}" />{{dataset[1]}}<br />
+            {% endfor %}
+        </div>
+    </div>
+    <div class="checklist">
+        <h3 class="checklist_name">Models</h3>
+        <div class="scroll_checklist">
+            {% for model in models %}
+            <input type="checkbox" id="{{model[0]}}" />{{model[1]}}<br />
+            {% endfor %}
+        </div>
+    </div>
+    <div class="checklist">
+        <h3 class="checklist_name">Optimizers</h3>
+        <div class="scroll_checklist">
+            {% for optimizer in optimizers %}
+            <input type="checkbox" id="{{optimizer[0]}}" />{{optimizer[1]}}<br />
+            {% endfor %}
+        </div>
+    </div>
+    <div class="checklist">
+        <h3 class="checklist_name">Users</h3>
+        <div class="scroll_checklist">
+            {% for user in users %}
+            <input type="checkbox" id="{{user}}" />{{user}}<br />
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

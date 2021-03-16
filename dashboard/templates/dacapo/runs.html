@@ -1,0 +1,68 @@
+{% extends 'dacapo/common.html' %}
+
+{% block header %}
+<h1>{% block title %}Monitor Runs{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+<table id="example" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Repitition</th>
+            <th>Trained Iterations</th>
+            <th>Started</th>
+            <th>Task</th>
+            <th>Data</th>
+            <th>Model</th>
+            <th>Optimizer</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for run in runs %}
+        <tr>
+            <td></td>
+            <td>{{run.name}}</td>
+            <td>{{run.repetition}}</td>
+            <td>{{run.trained_iterations}}</td>
+            <td>{{run.started}}</td>
+            <td>{{run.task}}</td>
+            <td>{{run.data}}</td>
+            <td>{{run.model}}</td>
+            <td>{{run.optimizer}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block javascript %}
+<script src="{{ url_for('static', filename='table.js') }}"></script>
+<script>
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "{{ url_for('dacapo.get_runs') }}", false);
+    xhr.onload = console.log("loaded")
+    let checklists = document.getElementById("common-checklists").querySelectorAll(".checklist");
+    let data = { "tasks": new Set(), "datasets": new Set(), "models": new Set(), "optimizers": new Set(), "users": new Set() };
+    console.log(checklists);
+    checklists.forEach(checklist => {
+        let checklist_name = checklist.childNodes[1].textContent.toLowerCase();
+        console.log(checklist_name)
+        checklist.querySelectorAll("input").forEach(element => {
+            element.addEventListener('change', function () {
+                console.log(element);
+                if (this.checked) {
+                    data[checklist_name].add(element.nextSibling.data)
+                } else {
+                    data[checklist_name].delete(element.nextSibling.data)
+                }
+                console.log(checklist_name);
+                console.log(data[checklist_name]);
+            });
+
+        })
+    });
+</script>
+{% endblock %}

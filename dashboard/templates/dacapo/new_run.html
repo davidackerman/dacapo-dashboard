@@ -1,0 +1,178 @@
+{% extends 'dacapo/common.html' %}
+
+{% block header %}
+<h1>{% block title %}New Run{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<div class="checklists">
+    <form action="{{ url_for('dacapo.new_task') }}">
+        <button type="submit"><i class="fa fa-plus"></i> Task </button>
+    </form>
+    <form action="{{ url_for('dacapo.new_dataset') }}">
+        <button type="submit"><i class="fa fa-plus"></i> Dataset </button>
+    </form>
+    <form action="{{ url_for('dacapo.new_model') }}">
+        <button type="submit"><i class="fa fa-plus"></i> Model </button>
+    </form>
+    <form action="{{ url_for('dacapo.new_optimizer') }}">
+        <button type="submit"><i class="fa fa-plus"></i> Optimizer </button>
+    </form>
+</div>
+<div>
+    <button id="delete-many">Delete</button>
+</div>
+
+<table id="new-runs-table" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Task</th>
+            <th>Task ID</th>
+            <th>Data</th>
+            <th>Data ID</th>
+            <th>Model</th>
+            <th>Model ID</th>
+            <th>Optimizer</th>
+            <th>Optimizer ID</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for run in runs %}
+        <tr>
+            <td></td>
+            <td>{{run.name}}</td>
+            <td>{{run.task}}</td>
+            <td>{{run.task_id}}</td>
+            <td>{{run.data}}</td>
+            <td>{{run.data_id}}</td>
+            <td>{{run.model}}</td>
+            <td>{{run.model_id}}</td>
+            <td>{{run.optimizer}}</td>
+            <td>{{run.optimizer_id}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<form id="run-form">
+    <p><label>Repititions:</label> <input name="repetitions" type="number" value="3"></p>
+    <p><label>Iterations:</label> <input name="num_iterations" type="number" value="100000"></p>
+    <p><label>Validation Interval:</label> <input name="validation_interval" type="number" value="2000"></p>
+    <p><label>Snapshot Interval:</label> <input name="snapshot_interval" type="number" value="500"></p>
+    <p><label>Best Validation:</label> <input name="keep_best_validation" type="text" value="max:balanced_accuracy"></p>
+    <p><label>Num Workers:</label> <input name="num_workers" type="number" value=1></p>
+    <p><label>Bsub flags:</label> <input name="bsub_flags" type="text" value=""></p>
+    <input type="submit" id="submit-run">
+</form>
+{% endblock %}
+
+{% block javascript %}
+<script src="{{ url_for('static', filename='table.js') }}"></script>
+<script>
+    let checklists = document.getElementById("common-checklists").querySelectorAll(".checklist");
+    let table = $("#new-runs-table").DataTable({
+        columnDefs: [{
+            orderable: false,
+            className: 'select-checkbox',
+            targets: 0
+        }, {
+            "targets": [3],
+            "visible": false
+        }, {
+            "targets": [5],
+            "visible": false
+        }, {
+            "targets": [7],
+            "visible": false
+        }, {
+            "targets": [9],
+            "visible": false
+        }],
+        select: {
+            style: 'os',
+            selector: 'td:first-child'
+        },
+        order: [[1, 'asc']]
+    });
+    let ids = { "tasks": new Set(), "datasets": new Set(), "models": new Set(), "optimizers": new Set(), "users": new Set() };
+    let elements = Array.from(checklists).reduce(function (o, x) {
+        x.querySelectorAll("input").forEach(element => {
+            o[element.id] = element
+        })
+        return o;
+    }, {});
+    console.log(elements);
+    checklists.forEach(checklist => {
+        let checklist_name = checklist.childNodes[1].textContent.toLowerCase();
+        checklist.querySelectorAll("input").forEach(element => {
+            element.addEventListener('change', function () {
+                table.clear();
+                console.log(ids[checklist_name]);
+                if (this.checked) {
+                    ids[checklist_name].add(element.id)
+                } else {
+                    ids[checklist_name].delete(element.id)
+                }
+                console.log(ids[checklist_name])
+                let array_data = Object.keys(ids).reduce(function (o, x) { o[x] = Array.from(ids[x]); return o; }, {});
+                fetch("{{ url_for('dacapo.create_new_run') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(array_data) }).then(response => response.json()).then(ids => {
+                    let rows = [];
+                    ids.forEach((run) => {
+                        rows.push([
+                            "", "", run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.model.name, run.model.id, run.optimizer.name, run.optimizer.id,]);
+                    })
+                    table.rows.add(rows).draw();
+                });
+            });
+        })
+    });
+    let delete_button = document.getElementById("delete-many");
+    delete_button.addEventListener('click', function () {
+        console.log("clicked");
+        let array_data = Object.keys(ids).reduce(function (o, x) { o[x] = Array.from(ids[x]); return o; }, {});
+        console.log(array_data);
+        fetch("{{ url_for('dacapo.delete_configs') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(array_data) }).then(response => response.json()).then(data => {
+            data.forEach((config) => {
+                console.log("deleted ", config["config_type"], config["name"], config["id"], elements[config['id']]);
+                let elem = elements[config["id"]];
+                elem.parentNode.removeChild(elem.nextSibling);
+                elem.parentNode.removeChild(elem);
+            })
+        });
+    })
+
+    function getSelected() {
+        var rows = Array.from(table.rows({ selected: true }).data());
+        let row_data = [];
+        rows.forEach((row) => {
+            row_data.push({
+                "name": row[1], "task": [row[3], row[2]], "dataset": [row[5], row[4]], "model": [row[7], row[6]], "optimizer": [row[9], row[8]]
+            });
+        });
+        return row_data
+    }
+
+
+    let run_form = document.getElementById("run-form");
+    run_form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        let rows = getSelected();
+        let form_data = new FormData(run_form);
+        let post_object = Object.fromEntries(form_data);
+        post_object["runs"] = rows;
+        let post_data = JSON.stringify(post_object);
+        fetch("{{ url_for('dacapo.start_runs') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: post_data }).then(response => response.json()).then(data => {
+            data.forEach((config) => {
+                console.log("deleted ", config["config_type"], config["name"]);
+                let elem = elements[config["id"]]
+                elem.parentNode.removeChild(elem.nextSibling)
+                elem.parentNode.removeChild(elem);
+            })
+        });
+    })
+</script>
+{% endblock %}

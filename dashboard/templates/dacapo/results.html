@@ -1,0 +1,81 @@
+{% extends 'dacapo/common.html' %}
+
+{% block header %}
+<h1>{% block title %}Query Results{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+{{ super() }}
+<table id="runs-table" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Repitition</th>
+            <th>Trained Iterations</th>
+            <th>Started</th>
+            <th>Task</th>
+            <th>Data</th>
+            <th>Model</th>
+            <th>Optimizer</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for run in runs %}
+        <tr>
+            <td></td>
+            <td>{{run.name}}</td>
+            <td>{{run.repetition}}</td>
+            <td>{{run.trained_iterations}}</td>
+            <td>{{run.started}}</td>
+            <td>{{run.task}}</td>
+            <td>{{run.data}}</td>
+            <td>{{run.model}}</td>
+            <td>{{run.optimizer}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<button type="button">Show Training Losses</button>
+<button type="button">Show Validation Scores</button>
+<div>
+    <h3 class="checklist_name">Available Scores</h3>
+    <div class="scroll_checklist">
+        {% for score in scores %}
+        <input type="checkbox" /> {{score}} <br />
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{{ url_for('static', filename='table.js') }}"></script>
+<script>
+    let checklists = document.getElementById("common-checklists").querySelectorAll(".checklist");
+    let table = $("#runs-table").DataTable();
+    let data = { "tasks": new Set(), "datasets": new Set(), "models": new Set(), "optimizers": new Set(), "users": new Set() };
+    checklists.forEach(checklist => {
+        let checklist_name = checklist.childNodes[1].textContent.toLowerCase();
+        checklist.querySelectorAll("input").forEach(element => {
+            element.addEventListener('change', function () {
+                table.clear();
+                if (this.checked) {
+                    data[checklist_name].add(element.id)
+                } else {
+                    data[checklist_name].delete(element.id)
+                }
+                let array_data = Object.keys(data).reduce(function (o, x) { o[x] = Array.from(data[x]); return o; }, {});
+                fetch("{{ url_for('dacapo.get_results') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(array_data) }).then(response => response.json()).then(data => {
+                    let rows = [];
+                    data.forEach((run) => {
+                        console.log("adding row:");
+                        rows.push([
+                            "", run["name"], run["repetition"], run["trained_iterations"], run["started"], run["task"], run["data"], run["model"], run["optimizer"],]);
+                    })
+                    table.rows.add(rows).draw();
+                });
+            });
+        })
+    });
+</script>
+{% endblock %}

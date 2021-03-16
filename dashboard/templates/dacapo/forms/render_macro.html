@@ -1,0 +1,106 @@
+{% macro render_form(fields, id_prefix) %}
+
+{% for field, field_data in fields.items() %}
+
+<div>
+    <label title="{{ field_data.get('help_text') }}" onclick="toggle_visible('{{ id_prefix }}_{{ field }}_input')">
+        {{ field }} {% if field_data.get("optional") %} (Optional) {% endif %}:
+    </label>
+    <div id="{{ id_prefix }}_{{ field }}_input">
+        {{ render_field(field, field_data, id_prefix + "." + field) }}
+    </div>
+</div>
+
+{% endfor %}
+
+{% endmacro %}
+
+
+{% macro render_field(field, field_data, id_prefix) %}
+
+{% if field_data.type == "int" %}
+
+<input name="{{id_prefix}}" type="number" {% if field_data.default is not none %} value="{{ field_data.default }}" {%
+    endif %}>
+
+{% elif field_data.type == "str" %}
+
+<input name="{{id_prefix}}" type="text" {% if field_data.default is not none %} value="{{ field_data.default }}" {%
+    endif %}>
+
+{% elif field_data.type == "float" %}
+
+<input name="{{id_prefix}}" type="text" {% if field_data.default is not none %} value="{{ field_data.default }}" {%
+    endif %}>
+
+{% elif field_data.type == "path" %}
+
+<input name="{{id_prefix}}" type="text" {% if field_data.default is not none %} value="{{ field_data.default }}" {%
+    endif %}>
+
+{% elif field_data.type == "coordinate" %}
+
+<div id="{{ id_prefix }}_elements">
+
+</div>
+<button type="button" onclick="add_one('{{ id_prefix }}', '{{ field_data.element }}')">Add
+    one</button>
+<button type="button" onclick="remove_one('{{ id_prefix }}', '{{ field_data.element }}')">Remove
+    one</button>
+
+{% elif field_data.type == "choice" %}
+
+<select name='{{ id_prefix }}.__type__' id="{{ field }}" onchange="fetch_configurable(this, '{{ id_prefix }}')">
+    {% for choice in field_data.choices %}
+    <option value="{{ choice }}">{{ choice }}</option>
+    {% endfor %}
+</select>
+
+{% elif field_data.type == "enum" %}
+
+<select name="{{id_prefix}}.value" id="{{ field }}">
+    {% for choice in field_data.choices %}
+    <option value="{{ choice }}">{{ choice }}</option>
+    {% endfor %}
+</select>
+
+{% elif field_data.type == "list" %}
+
+<div id="{{ id_prefix }}_elements">
+
+</div>
+<button type="button" onclick="add_one('{{ id_prefix }}', '{{ field_data.element }}')">Add
+    one</button>
+<button type="button" onclick="remove_one('{{ id_prefix }}', '{{ field_data.element }}')">Remove
+    one</button>
+
+{% elif field_data.type == "dict" %}
+
+<div id="{{ id_prefix }}_elements">
+
+</div>
+<button type="button" onclick="dict_add_one('{{ id_prefix }}', '{{ field_data.key }}', '{{ field_data.value }}')">Add
+    one</button>
+<button type="button"
+    onclick="dict_remove_one('{{ id_prefix }}', '{{ field_data.key }}', '{{ field_data.value }}')">Remove
+    one</button>
+
+{% elif field_data.type == "tuple" %}
+
+{% for arg in field_data.args %}
+{{ render_field("", arg, id_prefix + '[' + (loop.index-1)|string + ']') }}
+{% endfor %}
+
+{% elif field_data.type == "configurable" %}
+
+<div>
+    {{ render_form(field_data.fields, id_prefix) }}
+</div>
+
+{% elif field_data.type == "bool" %}
+
+<input name="{{id_prefix}}" type="checkbox" {% if field_data.default %} checked {% endif %}>
+
+{% endif %}
+
+{% endmacro %}

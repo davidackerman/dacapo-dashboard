@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block javascript %}
+{{ super() }}
+<script>
+    function submit_form(url, redirect_url) {
+        let form_data = getFormData();
+        console.log(form_data);
+        // submit form_data
+
+        fetch(url, { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify(form_data) }).then(response => response.json()).then(data => {
+            if (data["success"]) {
+                console.log("successfully created config: redirecting");
+                window.location.replace(redirect_url);
+            } else {
+                console.log("failed to create config");
+                console.log(data["error"])
+            }
+        });
+        return false;
+    }
+    function getFormData() {
+
+        /* serialize form data */
+        let data = {};
+        let form_elements = document.querySelectorAll("#new-configurable-form [name]")
+        let name, hold, splits, L, dKey;
+
+        let names = Array.from(form_elements).map(x => x.getAttribute("name"));
+        console.log("NAMES:")
+        console.log(names);
+
+        form_elements.forEach(function (n) {
+            name = n.name;
+
+            hold = '';
+
+            let components = name.split('.');
+            components.shift();
+            let keys = [];
+            components.forEach(function (component, index) {
+                if (component.indexOf("[") >= 0) {
+                    let sub_components = component.split("[")
+                    let k = sub_components.shift();
+                    keys.push(k);
+                    while (sub_components.length > 0) {
+                        let next_index = sub_components.shift();
+                        let i = parseInt(next_index.substring(0, next_index.length - 1));
+                        keys.push(i);
+                    }
+                }
+                else {
+                    keys.push(component);
+                }
+            })
+
+            L = keys.length;
+            function get_datatype(i) {
+                if (i == L - 1) {
+                    // if x is the last key then it will be replaced with some value
+                    // cannot skip this case incase last key is an array index
+                    return null
+                } else if (Number.isInteger(keys[i + 1])) {
+                    // if the next key is an integer, than this key is an array
+                    let sub_array = [];
+                    // make sure this array is long enough that indexing next key will work
+                    for (j = 0; j < keys[i + 1] + 1; j++) {
+                        sub_array.push(get_datatype(i + 1));
+                    }
+                    return sub_array;
+                } else {
+                    // if this is not the last key, and it has sub keys, this element is an object
+                    return {}
+                }
+            }
+
+            let sub_data = data;
+            if (L === 0) {
+                console.log("Should not be reachable!");
+            }
+            else {
+                keys.forEach(function (x, i) {
+                    if (i == L - 1) {
+                        // if x is the last key in keys, simply fill in the value
+                        if (n.value === "") {
+                            sub_data[x] = null
+                        } else {
+                            sub_data[x] = n.value
+                        }
+                    } else {
+                        if (x in sub_data || (Number.isInteger(x) && sub_data[x] != null)) {
+                            sub_data = sub_data[x]
+                        } else {
+                            sub_data[x] = get_datatype(i)
+                            sub_data = sub_data[x]
+                        }
+                    }
+                });
+            }
+        });
+
+        return data;
+    }
+    function toggle_visible(id) {
+        var x = document.getElementById(id);
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+    }
+    function fetch_configurable(element, id) {
+        fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": element.value, "id_prefix": id }) }).then(response => response.json()).then(data => {
+            let html = data["html"];
+            // delete old subform if it exists:
+            let old_subform = document.getElementById(id + "_subform");
+            if (old_subform !== null) {
+                old_subform.parentNode.removeChild(old_subform);
+            }
+            let subform = document.createElement("div");
+            subform.setAttribute("id", id + "_subform");
+            subform.innerHTML = html;
+            element.parentElement.appendChild(subform);
+        });
+    };
+    function add_one(id, element) {
+        let list_div = document.getElementById(id + "_elements");
+        let num_elements = list_div.childElementCount;
+        let new_element = document.createElement("div");
+        let new_id = id + "[" + num_elements + "]";
+        fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": element, "id_prefix": new_id }) }).then(response => response.json()).then(data => {
+            let html = data["html"];
+            new_element.setAttribute("id", new_id);
+            new_element.setAttribute("class", "list_element");
+            new_element.innerHTML = html;
+            list_div.appendChild(new_element);
+
+        });
+    }
+    function remove_one(id, element) {
+        let list_div = document.getElementById(id + "_elements");
+        let num_elements = list_div.childElementCount;
+        if (num_elements > 0) {
+            let remove_id = id + "[" + (num_elements - 1) + "]";
+            let child_to_remove = document.getElementById(remove_id);
+            list_div.removeChild(child_to_remove);
+        }
+    };
+    function dict_add_one(id, key, value) {
+        let dict_div = document.getElementById(id + "_elements");
+        let num_elements = dict_div.childElementCount;
+        let new_key_id = id + "_key[" + (num_elements + 1) + "]";
+        let new_value_id = id + "[" + (num_elements + 1) + "]";
+        let key_promise = fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": key, "id_prefix": new_key_id }) }).then(response => response.json())
+        let value_promise = fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": value, "id_prefix": new_value_id }) }).then(response => response.json())
+        Promise.all([key_promise, value_promise]).then(data => {
+            let key_data = data[0];
+            let value_data = data[1];
+            let key_html = key_data["html"];
+            let value_html = value_data["html"];
+            let num_elements = dict_div.childElementCount;
+            let new_element = document.createElement("div");
+            new_element.setAttribute("id", id + "[" + num_elements + "]");
+            new_element.setAttribute("class", "dict_element");
+            let key_div = document.createElement("div");
+            key_div.setAttribute("id", new_key_id);
+            let value_div = document.createElement("div");
+            value_div.setAttribute("id", new_value_id);
+            key_div.innerHTML = key_html;
+            value_div.innerHTML = value_html;
+            new_element.appendChild(key_div);
+            new_element.appendChild(value_div);
+            dict_div.appendChild(new_element);
+
+        });
+    }
+    function dict_remove_one(id, key, value) {
+        let list_div = document.getElementById(id + "_elements");
+        let num_elements = list_div.childElementCount;
+        if (num_elements > 0) {
+            let remove_id = id + "[" + (num_elements - 1) + "]";
+            let child_to_remove = document.getElementById(remove_id);
+            list_div.removeChild(child_to_remove);
+        }
+    };
+</script>
+{% endblock %}
