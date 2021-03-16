@@ -1,0 +1,7 @@
+bokeh
+configargparse
+pymongo
+tqdm
+zarr
+click
+flask
