@@ -1,0 +1,30 @@
+from flask import render_template, request, jsonify
+import dacapo
+from dacapo.converter import converter
+
+from .blue_print import bp
+from .configurables import parse_fields
+from dashboard.db import get_db
+
+import random
+
+
+@bp.route("/new_dataset", methods=["GET", "POST"])
+def new_dataset():
+    if request.method == "POST":
+        try:
+            data = request.json
+            new_dataset = converter.structure(data, dacapo.configurables.Dataset)
+            new_dataset.verify()
+            db = get_db()
+            db.add_dataset(converter.unstructure(new_dataset))
+            return jsonify({"success": True})
+        except Exception as e:
+            raise (e)
+            return jsonify({"success": False, "error": str(e)})
+
+    fields = parse_fields(dacapo.configurables.Dataset)
+    _ = {"random_name": random.choice(dacapo.hash.ADJECTIVE_WORDLIST)}
+    return render_template(
+        "dacapo/forms/dataset.html", fields=fields, id_prefix="dataset"
+    )
