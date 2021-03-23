@@ -4,70 +4,107 @@
 <h1>{% block title %}New Run{% endblock %}</h1>
 {% endblock %}
 
+{% block task_checklist %}
+<form action="{{ url_for('dacapo.new_task') }}" class="plus-one">
+    <button type="submit"><i class="fa fa-plus"></i></button>
+</form>
+{% endblock %}
+{% block dataset_checklist %}
+<form action="{{ url_for('dacapo.new_dataset') }}" class="plus-one">
+    <button type="submit"><i class="fa fa-plus"></i></button>
+</form>
+{% endblock %}
+{% block model_checklist %}
+<form action="{{ url_for('dacapo.new_model') }}" class="plus-one">
+    <button type="submit"><i class="fa fa-plus"></i></button>
+</form>
+{% endblock %}
+{% block optimizer_checklist %}
+<form action="{{ url_for('dacapo.new_optimizer') }}" class="plus-one">
+    <button type="submit"><i class="fa fa-plus"></i></button>
+</form>
+{% endblock %}
+
 {% block content %}
 {{ super() }}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<div class="checklists">
-    <form action="{{ url_for('dacapo.new_task') }}">
-        <button type="submit"><i class="fa fa-plus"></i> Task </button>
-    </form>
-    <form action="{{ url_for('dacapo.new_dataset') }}">
-        <button type="submit"><i class="fa fa-plus"></i> Dataset </button>
-    </form>
-    <form action="{{ url_for('dacapo.new_model') }}">
-        <button type="submit"><i class="fa fa-plus"></i> Model </button>
-    </form>
-    <form action="{{ url_for('dacapo.new_optimizer') }}">
-        <button type="submit"><i class="fa fa-plus"></i> Optimizer </button>
-    </form>
-</div>
 <div>
     <button id="delete-many">Delete</button>
 </div>
+{% endblock %}
 
-<table id="new-runs-table" class="display" style="width:100%">
-    <thead>
-        <tr>
-            <th></th>
-            <th>Name</th>
-            <th>Task</th>
-            <th>Task ID</th>
-            <th>Data</th>
-            <th>Data ID</th>
-            <th>Model</th>
-            <th>Model ID</th>
-            <th>Optimizer</th>
-            <th>Optimizer ID</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for run in runs %}
-        <tr>
-            <td></td>
-            <td>{{run.name}}</td>
-            <td>{{run.task}}</td>
-            <td>{{run.task_id}}</td>
-            <td>{{run.data}}</td>
-            <td>{{run.data_id}}</td>
-            <td>{{run.model}}</td>
-            <td>{{run.model_id}}</td>
-            <td>{{run.optimizer}}</td>
-            <td>{{run.optimizer_id}}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{% block extra_content %}
+{{ super() }}
+<section class="content">
+    <table id="new-runs-table" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Task</th>
+                <th>Task ID</th>
+                <th>Data</th>
+                <th>Data ID</th>
+                <th>Model</th>
+                <th>Model ID</th>
+                <th>Optimizer</th>
+                <th>Optimizer ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for run in runs %}
+            <tr>
+                <td></td>
+                <td>{{run.name}}</td>
+                <td>{{run.task}}</td>
+                <td>{{run.task_id}}</td>
+                <td>{{run.data}}</td>
+                <td>{{run.data_id}}</td>
+                <td>{{run.model}}</td>
+                <td>{{run.model_id}}</td>
+                <td>{{run.optimizer}}</td>
+                <td>{{run.optimizer_id}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
 
-<form id="run-form">
-    <p><label>Repititions:</label> <input name="repetitions" type="number" value="3"></p>
-    <p><label>Iterations:</label> <input name="num_iterations" type="number" value="100000"></p>
-    <p><label>Validation Interval:</label> <input name="validation_interval" type="number" value="2000"></p>
-    <p><label>Snapshot Interval:</label> <input name="snapshot_interval" type="number" value="500"></p>
-    <p><label>Best Validation:</label> <input name="keep_best_validation" type="text" value="max:balanced_accuracy"></p>
-    <p><label>Num Workers:</label> <input name="num_workers" type="number" value=1></p>
-    <p><label>Bsub flags:</label> <input name="bsub_flags" type="text" value=""></p>
-    <input type="submit" id="submit-run">
-</form>
+<section class="content">
+    <form id="run-form">
+        <table>
+            <tr>
+                <th><label>Repititions:</label></th>
+                <th><input name="repetitions" type="number" value="3"></th>
+            </tr>
+            <tr>
+                <th><label>Iterations:</label></th>
+                <th><input name="num_iterations" type="number" value="100000"></th>
+            </tr>
+            <tr>
+                <th><label>Validation Interval:</label></th>
+                <th><input name="validation_interval" type="number" value="2000"></th>
+            </tr>
+            <tr>
+                <th><label>Snapshot Interval:</label></th>
+                <th><input name="snapshot_interval" type="number" value="500"></th>
+            </tr>
+            <tr>
+                <th><label>Best Validation:</label></th>
+                <th><input name="keep_best_validation" type="text" value="max:balanced_accuracy"></th>
+            </tr>
+            <tr>
+                <th><label>Num Workers:</label></th>
+                <th><input name="num_workers" type="number" value=1></th>
+            </tr>
+            <tr>
+                <th><label>Bsub flags:</label></th>
+                <th><input name="bsub_flags" type="text" value=""></th>
+            </tr>
+        </table>
+        <input type="submit" id="submit-run">
+    </form>
+</section>
 {% endblock %}
 
 {% block javascript %}

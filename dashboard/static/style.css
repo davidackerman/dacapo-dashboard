@@ -1,33 +1,148 @@
-html { font-family: sans-serif; background: #eee; padding: 1rem; }
-body { max-width: 70em; margin: 0 auto; background: white; }
-h1 { font-family: serif; color: #377ba8; margin: 1rem 0; }
-a { color: #377ba8; }
-hr { border: none; border-top: 1px solid lightgray; }
-nav { background: lightgray; display: flex; align-items: center; padding: 0 0.5rem; }
-nav h1 { flex: auto; margin: 0; }
-nav h1 a { text-decoration: none; padding: 0.25rem 0.5rem; }
-nav ul  { display: flex; list-style: none; margin: 0; padding: 0; }
-nav ul li a, nav ul li span, header .action { display: block; padding: 0.5rem; }
-.content { padding: 0 1rem 1rem; }
-.content > header { border-bottom: 1px solid lightgray; display: flex; align-items: flex-end; }
-.content > header h1 { flex: auto; margin: 1rem 0 0.25rem 0; }
-.flash { margin: 1em 0; padding: 1em; background: #cae6f6; border: 1px solid #377ba8; }
-.post > header { display: flex; align-items: flex-end; font-size: 0.85em; }
-.post > header > div:first-of-type { flex: auto; }
-.post > header h1 { font-size: 1.5em; margin-bottom: 0; }
-.post .about { color: slategray; font-style: italic; }
-.post .body { white-space: pre-line; }
-.content:last-child { margin-bottom: 0; }
-.content form { margin: 1em 0; display: flex; flex-direction: column; }
-.content label { font-weight: bold; margin-bottom: 0.5em; }
-.content input, .content textarea { margin-bottom: 1em; }
-.content textarea { min-height: 12em; resize: vertical; }
-input.danger { color: #cc2f2e; }
-input[type=submit] { align-self: start; min-width: 10em; }
-.checklists {
-    display: grid; grid-gap: 20px; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; border:2px solid rgb(8, 231, 56);
+:root {
+    --background: #122c34;
+    --foreground: #ebebeb;
+    --highlight: #ffa400;
+    --helptext: #36827f;
+    --alert: #ac7b84;
 }
-.checklist_name {border:2px solid rgb(30, 8, 231); min-width:8em; text-align:center}
-.scroll_checklist { border:2px solid rgb(231, 8, 8); min-width:8em;; height: 100px; overflow-y: scroll; }
-.dict_element { border:2px solid rgb(253, 152, 1)}
-.list_element {border:2px solid rgb(20, 255, 243)}
+
+html {}
+
+body {
+    /*background: var(--highlight) url("https://i.pinimg.com/originals/f8/0d/d9/f80dd901d57b49f2dcb9107db2b8eddc.jpg") repeat fixed top center;*/
+    background: var(--highlight) url("/static/sheet_music.jpg") repeat fixed top center;
+    border: none;
+    color: var(--foreground);
+    font-family: sans-serif;
+    margin: 0px;
+    padding: 0px;
+}
+
+h1, h2 {
+    background: var(--background);
+    color: var(--highlight);
+    margin: 0px;
+}
+
+h1 {
+    display: block;
+    margin-top: 0px;
+    padding-bottom: 0.25em;
+    padding-top: 0.25em;
+}
+
+nav {
+    background: var(--foreground);
+    color: var(--background);
+    margin-top: 1em;
+    padding-top: 0px;
+    margin-bottom: 1em;
+}
+
+nav>div {
+    display: flex;
+    justify-content: space-between;
+    padding-right: 1em;
+    padding-left: 1em;
+}
+
+nav>h1 {
+    display: block;
+    background: var(--background);
+    color: var(--highlight);
+    font-size: 50px;
+    text-align: center;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+ul.users {
+    justify-content: flex-end;
+}
+
+nav a {
+    color: var(--background);
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+}
+
+nav ul li a, nav ul li span, header .action {
+    display: block;
+    padding: 0.5rem;
+}
+
+a {
+    color: var(--highlight);
+}
+
+label {
+    text-align: left;
+}
+
+.content {
+    background: var(--background);
+    margin: 3em;
+    padding: 1em;
+}
+
+input.danger {
+    color: var(--alert);
+}
+
+input[type=submit] {
+    align-self: start;
+    min-width: 10em;
+}
+
+/*
+.checklists {
+    display: grid;
+    grid-gap: 20px;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+*/
+
+.checklists h3, .checklists .plus-one {
+    display: inline-block;
+}
+
+.checklist_header {
+    text-align: center;
+}
+.checklist_name {
+    min-width: 8em;
+    text-align: center
+}
+.configurable_field {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+.configurable_helptext {
+    display: block;
+    color: var(--helptext);
+}
+
+.scroll_checklist {
+    background: var(--foreground);
+    color: var(--background);
+    min-width: 8em;
+    height: 100px;
+    overflow-y: scroll;
+}
+
+.list_element {
+    margin-left: 6%
+}
+
+.config_element {
+    margin-left: 6%
+}

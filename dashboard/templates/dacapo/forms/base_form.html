@@ -110,15 +110,16 @@
         }
     }
     function fetch_configurable(element, id) {
+        let old_subform = document.getElementById(id + "_subform");
+        let subform = document.createElement("div");
+        subform.setAttribute("id", id + "_subform");
+        subform.setAttribute("class", "config_element");
         fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": element.value, "id_prefix": id }) }).then(response => response.json()).then(data => {
             let html = data["html"];
             // delete old subform if it exists:
-            let old_subform = document.getElementById(id + "_subform");
             if (old_subform !== null) {
                 old_subform.parentNode.removeChild(old_subform);
             }
-            let subform = document.createElement("div");
-            subform.setAttribute("id", id + "_subform");
             subform.innerHTML = html;
             element.parentElement.appendChild(subform);
         });
@@ -128,10 +129,10 @@
         let num_elements = list_div.childElementCount;
         let new_element = document.createElement("div");
         let new_id = id + "[" + num_elements + "]";
+        new_element.setAttribute("id", new_id);
+        new_element.setAttribute("class", "list_element");
         fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": element, "id_prefix": new_id }) }).then(response => response.json()).then(data => {
             let html = data["html"];
-            new_element.setAttribute("id", new_id);
-            new_element.setAttribute("class", "list_element");
             new_element.innerHTML = html;
             list_div.appendChild(new_element);
 

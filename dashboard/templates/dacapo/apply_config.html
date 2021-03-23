@@ -1,10 +1,12 @@
 {% extends 'dacapo/common.html' %}
 
 {% block header %}
-  <h1>{% block title %}Apply Config{% endblock %}</h1>
+<h1>{% block title %}Apply Config{% endblock %}</h1>
 {% endblock %}
 
-{% block content %}
+{% block extra_content %}
 {{ super() }}
-HI, LETS APPLY A CONFIG
+<section class="content">
+    <button type="button">Apply Config</button>
+</section>
 {% endblock %}

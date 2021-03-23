@@ -4,48 +4,52 @@
 <h1>{% block title %}Query Results{% endblock %}</h1>
 {% endblock %}
 
-{% block content %}
+{% block extra_content %}
 {{ super() }}
-<table id="runs-table" class="display" style="width:100%">
-    <thead>
-        <tr>
-            <th></th>
-            <th>Name</th>
-            <th>Repitition</th>
-            <th>Trained Iterations</th>
-            <th>Started</th>
-            <th>Task</th>
-            <th>Data</th>
-            <th>Model</th>
-            <th>Optimizer</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for run in runs %}
-        <tr>
-            <td></td>
-            <td>{{run.name}}</td>
-            <td>{{run.repetition}}</td>
-            <td>{{run.trained_iterations}}</td>
-            <td>{{run.started}}</td>
-            <td>{{run.task}}</td>
-            <td>{{run.data}}</td>
-            <td>{{run.model}}</td>
-            <td>{{run.optimizer}}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<button type="button">Show Training Losses</button>
-<button type="button">Show Validation Scores</button>
-<div>
-    <h3 class="checklist_name">Available Scores</h3>
-    <div class="scroll_checklist">
-        {% for score in scores %}
-        <input type="checkbox" /> {{score}} <br />
-        {% endfor %}
+<section class="content">
+    <table id="runs-table" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Repitition</th>
+                <th>Trained Iterations</th>
+                <th>Started</th>
+                <th>Task</th>
+                <th>Data</th>
+                <th>Model</th>
+                <th>Optimizer</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for run in runs %}
+            <tr>
+                <td></td>
+                <td>{{run.name}}</td>
+                <td>{{run.repetition}}</td>
+                <td>{{run.trained_iterations}}</td>
+                <td>{{run.started}}</td>
+                <td>{{run.task}}</td>
+                <td>{{run.data}}</td>
+                <td>{{run.model}}</td>
+                <td>{{run.optimizer}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+<section class="content">
+    <button type="button">Show Training Losses</button>
+    <button type="button">Show Validation Scores</button>
+    <div>
+        <h3 class="checklist_name">Available Scores</h3>
+        <div class="scroll_checklist">
+            {% for score in scores %}
+            <input type="checkbox" /> {{score}} <br />
+            {% endfor %}
+        </div>
     </div>
-</div>
+</section>
 {% endblock %}
 
 {% block javascript %}

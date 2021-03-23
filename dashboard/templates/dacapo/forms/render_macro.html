@@ -2,10 +2,11 @@
 
 {% for field, field_data in fields.items() %}
 
-<div>
-    <label title="{{ field_data.get('help_text') }}" onclick="toggle_visible('{{ id_prefix }}_{{ field }}_input')">
+<div class="configurable_field">
+    <label onclick="toggle_visible('{{ id_prefix }}_{{ field }}_input')">
         {{ field }} {% if field_data.get("optional") %} (Optional) {% endif %}:
     </label>
+    <span class="configurable_helptext">{{ field_data.get('help_text') }}</span>
     <div id="{{ id_prefix }}_{{ field }}_input">
         {{ render_field(field, field_data, id_prefix + "." + field) }}
     </div>
