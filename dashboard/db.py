@@ -1,5 +1,4 @@
 from flask import g
-from flask_mongoengine import MongoEngine
 
 from dacapo.store import MongoDbStore
 
@@ -15,17 +14,11 @@ def close_db(e=None):
     g.pop("db", None)
 
 
-def init_db():
-    get_db()
-
-
 def init_app(app):
-    db = MongoEngine()
-
     dacapo_db = MongoDbStore()
     app.config["MONGODB_SETTINGS"] = {
         "db": dacapo_db.db_name,
         "host": dacapo_db.db_name,
     }
 
-    db.init_app(app)
+    # dacapo_db.init_app(app)

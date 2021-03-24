@@ -31,7 +31,6 @@ def dashboard():
     app = create_app()
 
     url = socket.getfqdn()
-    print(url)
     app.run(host=url, debug=True)
 
 
@@ -42,5 +41,5 @@ def init_db():
 
     app = create_app()
 
-    init_db()
+    init_db(app)
     click.echo("Initialized the database.")
