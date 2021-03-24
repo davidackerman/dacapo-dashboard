@@ -144,7 +144,7 @@
     }, {});
     console.log(elements);
     checklists.forEach(checklist => {
-        let checklist_name = checklist.childNodes[1].textContent.toLowerCase();
+        let checklist_name = checklist.children[0].children[0].textContent.toLowerCase();
         checklist.querySelectorAll("input").forEach(element => {
             element.addEventListener('change', function () {
                 table.clear();
