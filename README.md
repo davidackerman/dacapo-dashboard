@@ -1,8 +1,9 @@
 # Dacapo
 
 ## Installation:
-clone this repository, and use `pip install .`
+1) `pip install -r requirements.txt`
+2) `pip install .`
 
 ## Usage:
-Run `dacapo --help` for command line interface help.
+`dacapo-dashboard dashboard`
 
