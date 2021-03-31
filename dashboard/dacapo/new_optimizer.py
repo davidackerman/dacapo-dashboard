@@ -18,14 +18,13 @@ def new_optimizer():
             print(new_optimizer)
             new_optimizer.verify()
             db = get_db()
-            db.add_optimizer(converter.unstructure(new_optimizer))
+            db.add_optimizer(new_optimizer)
             return jsonify({"success": True})
         except Exception as e:
             raise(e)
             return jsonify({"success": False, "error": str(e)})
 
     fields = parse_fields(dacapo.configurables.Optimizer)
-    _ = {"random_name": random.choice(dacapo.hash.ADJECTIVE_WORDLIST)}
     return render_template(
         "dacapo/forms/optimizer.html", fields=fields, id_prefix="optimizer"
     )

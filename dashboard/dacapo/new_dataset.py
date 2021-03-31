@@ -17,14 +17,13 @@ def new_dataset():
             new_dataset = converter.structure(data, dacapo.configurables.Dataset)
             new_dataset.verify()
             db = get_db()
-            db.add_dataset(converter.unstructure(new_dataset))
+            db.add_dataset(new_dataset)
             return jsonify({"success": True})
         except Exception as e:
             raise (e)
             return jsonify({"success": False, "error": str(e)})
 
     fields = parse_fields(dacapo.configurables.Dataset)
-    _ = {"random_name": random.choice(dacapo.hash.ADJECTIVE_WORDLIST)}
     return render_template(
         "dacapo/forms/dataset.html", fields=fields, id_prefix="dataset"
     )

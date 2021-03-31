@@ -15,7 +15,7 @@ def new_task():
             new_task = converter.structure(data, dacapo.configurables.Task)
             new_task.verify()
             db = get_db()
-            db.add_task(converter.unstructure(new_task))
+            db.add_task(new_task)
             return jsonify({"success": True})
         except Exception as e:
             raise (e)

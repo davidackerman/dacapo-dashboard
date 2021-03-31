@@ -17,12 +17,11 @@ def new_model():
             new_model = converter.structure(data, dacapo.configurables.Model)
             new_model.verify()
             db = get_db()
-            db.add_model(converter.unstructure(new_model))
+            db.add_model(new_model)
             return jsonify({"success": True})
         except Exception as e:
             raise(e)
             return jsonify({"success": False, "error": str(e)})
 
     fields = parse_fields(dacapo.configurables.Model)
-    _ = {"random_name": random.choice(dacapo.hash.ADJECTIVE_WORDLIST)}
     return render_template("dacapo/forms/model.html", fields=fields, id_prefix="model")
