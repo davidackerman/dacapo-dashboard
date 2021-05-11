@@ -203,12 +203,13 @@
         post_object["runs"] = rows;
         let post_data = JSON.stringify(post_object);
         fetch("{{ url_for('dacapo.start_runs') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: post_data }).then(response => response.json()).then(data => {
-            data.forEach((config) => {
-                console.log("deleted ", config["config_type"], config["name"]);
-                let elem = elements[config["id"]]
-                elem.parentNode.removeChild(elem.nextSibling)
-                elem.parentNode.removeChild(elem);
-            })
+            console.log(data)
+            if (data.success){
+                console.log("submitted");
+            }
+            else{
+                console.log("failed to submit")
+            }
         });
     })
 </script>

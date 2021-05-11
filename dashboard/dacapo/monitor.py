@@ -67,5 +67,5 @@ def start_runs():
         ]
 
         dacapo.run_all(run_configs, run_execution.num_workers)
-
-    return jsonify("success")
+        
+    return jsonify({ "success" : True})
