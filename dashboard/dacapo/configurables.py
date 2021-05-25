@@ -36,7 +36,6 @@ def configurable():
         except AttributeError:
             field_type = eval(name)
         field = get_field_type(field_type, {})
-        print(field)
         html = render_template(
             "dacapo/forms/field.html", field=field, id_prefix=id_prefix
         )
