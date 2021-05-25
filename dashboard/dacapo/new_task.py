@@ -22,4 +22,5 @@ def new_task():
             return jsonify({"success": False, "error": str(e)})
 
     fields = parse_fields(dacapo.configurables.Task)
+    print(fields)
     return render_template("dacapo/forms/task.html", fields=fields, id_prefix="task")

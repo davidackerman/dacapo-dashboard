@@ -52,6 +52,7 @@
 {% elif field_data.type == "choice" %}
 
 <select name='{{ id_prefix }}.__type__' id="{{ field }}" onchange="fetch_configurable(this, '{{ id_prefix }}')">
+    <option value="" selected disabled hidden>Choose here</option>
     {% for choice in field_data.choices %}
     <option value="{{ choice }}">{{ choice }}</option>
     {% endfor %}
@@ -60,6 +61,7 @@
 {% elif field_data.type == "enum" %}
 
 <select name="{{id_prefix}}.value" id="{{ field }}">
+    <option value="" selected disabled hidden>Choose here</option>
     {% for choice in field_data.choices %}
     <option value="{{ choice }}">{{ choice }}</option>
     {% endfor %}
