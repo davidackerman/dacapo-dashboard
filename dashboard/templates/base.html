@@ -37,5 +37,16 @@
 <script src="{{ url_for('static', filename='jquery.js') }}"></script>
 <script src="{{ url_for('static', filename='jquery_datatables.js') }}"></script>
 <script src="{{ url_for('static', filename='datatables.js') }}"></script>
+<script>
+  function copyJsonData(jsonData) {
+    const el = document.createElement('textarea');
+    el.value = jsonData;
+    document.body.appendChild(el);
+    el.select();
+    el.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    document.body.removeChild(el);
+  }
+</script>
 {% block javascript %}
 {% endblock %}

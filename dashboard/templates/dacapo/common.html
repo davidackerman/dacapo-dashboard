@@ -10,7 +10,8 @@
         </div>
         <div class="scroll_checklist">
             {% for task in tasks %}
-            <input type="checkbox" id="{{task[0]}}" />{{task[1]}}<br />
+            <input type="checkbox" id="{{task[0]}}" /><span title="{{task[2]}}" onclick="copyJsonData(this.title)"> {{task[1]}} </span><br />
+            <br />
             {% endfor %}
         </div>
 
@@ -23,7 +24,7 @@
         </div>
         <div class="scroll_checklist">
             {% for dataset in datasets %}
-            <input type="checkbox" id="{{dataset[0]}}" />{{dataset[1]}}<br />
+            <input type="checkbox" id="{{dataset[0]}}" /><span title="{{dataset[2]}}" onclick="copyJsonData(this.title)"> {{dataset[1]}} </span><br />
             {% endfor %}
         </div>
 
@@ -36,7 +37,7 @@
         </div>
         <div class="scroll_checklist">
             {% for model in models %}
-            <input type="checkbox" id="{{model[0]}}" />{{model[1]}}<br />
+            <input type="checkbox" id="{{model[0]}}" /><span title="{{model[2]}}" onclick="copyJsonData(this.title)"> {{model[1]}} </span><br />
             {% endfor %}
         </div>
 
@@ -49,7 +50,7 @@
         </div>
         <div class="scroll_checklist">
             {% for optimizer in optimizers %}
-            <input type="checkbox" id="{{optimizer[0]}}" />{{optimizer[1]}}<br />
+            <input type="checkbox" id="{{optimizer[0]}}" /><span title="{{optimizer[2]}}" onclick="copyJsonData(this.title)"> {{optimizer[1]}} </span><br />
             {% endfor %}
         </div>
 
