@@ -41,6 +41,7 @@
             <tr>
                 <th></th>
                 <th>Name</th>
+                <th>Run ID</th>
                 <th>Task</th>
                 <th>Task ID</th>
                 <th>Data</th>
@@ -56,6 +57,7 @@
             <tr>
                 <td></td>
                 <td>{{run.name}}</td>
+                <td>{{run.id}}</td>
                 <td>{{run.task}}</td>
                 <td>{{run.task_id}}</td>
                 <td>{{run.data}}</td>
@@ -112,21 +114,31 @@
 <script>
     let checklists = document.getElementById("common-checklists").querySelectorAll(".checklist");
     let table = $("#new-runs-table").DataTable({
+    "createdRow": function( row, data, dataIndex ) {
+        if(data[2]!=""){
+         $(row).addClass('darkred');
+         $('td', row).removeClass('select-checkbox');
+        }
+        }
+        ,
         columnDefs: [{
             orderable: false,
             className: 'select-checkbox',
             targets: 0
-        }, {
-            "targets": [3],
+        },{
+            "targets": [2],
+            "visible": false
+        },{
+            "targets": [4],
             "visible": false
         }, {
-            "targets": [5],
+            "targets": [6],
             "visible": false
         }, {
-            "targets": [7],
+            "targets": [8],
             "visible": false
         }, {
-            "targets": [9],
+            "targets": [10],
             "visible": false
         }],
         select: {
@@ -135,6 +147,17 @@
         },
         order: [[1, 'asc']]
     });
+
+    //to prevent selection even if checkbox isn't there
+    table.on('select', function(e, dt, type, indexes) {
+    if (type === 'row') {
+        var rows = table.rows(indexes).nodes().to$();
+        $.each(rows, function() {
+        if ($(this).hasClass('darkred')) table.row($(this)).deselect();
+        })
+    }
+});
+    
     let ids = { "tasks": new Set(), "datasets": new Set(), "models": new Set(), "optimizers": new Set(), "users": new Set() };
     let elements = Array.from(checklists).reduce(function (o, x) {
         x.querySelectorAll("input").forEach(element => {
@@ -160,7 +183,17 @@
                     let rows = [];
                     ids.forEach((run) => {
                         rows.push([
-                            "", "", run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.model.name, run.model.id, run.optimizer.name, run.optimizer.id,]);
+                            "", "", "", run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.model.name, run.model.id, run.optimizer.name, run.optimizer.id,true]);
+                    })
+                    table.rows.add(rows).draw();
+                });
+
+                // Show existing runs, because otherwise it will be unclear to user why checking things doesn't do anything
+                fetch("{{ url_for('dacapo.get_runs') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(array_data) }).then(response => response.json()).then(ids => {
+                    let rows = [];
+                    ids.forEach((run) => {
+                        rows.push([
+                            "", "", run.id, run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.model.name, run.model.id, run.optimizer.name, run.optimizer.id,false]);
                     })
                     table.rows.add(rows).draw();
                 });
@@ -204,13 +237,15 @@
         let post_data = JSON.stringify(post_object);
         fetch("{{ url_for('dacapo.start_runs') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: post_data }).then(response => response.json()).then(data => {
             console.log(data)
-            if (data.success){
+            if (data.success) {
                 console.log("submitted");
             }
-            else{
+            else {
                 console.log("failed to submit")
             }
         });
     })
+
+
 </script>
 {% endblock %}

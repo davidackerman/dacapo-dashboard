@@ -187,3 +187,7 @@ input[type=submit] {
 .checkbox > input:active {
     border: 2px solid var(--alert);
 }
+
+tr.darkred td{
+    color: darkred;
+  }

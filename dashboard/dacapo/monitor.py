@@ -7,34 +7,63 @@ from .helpers import get_checklist_data
 import dacapo
 
 from datetime import datetime
+import itertools
 
-
-@bp.route("/runs", methods=["GET"])
+@bp.route("/runs", methods=["GET","POST"])
 def get_runs():
     if request.method == "GET":
         context = get_checklist_data()
         return render_template("dacapo/runs.html", **context)
     if request.method == "POST":
-        db = get_db()
+        request_data = request.json
+        run_component_ids = itertools.product(
+            request_data["tasks"],
+            request_data["datasets"],
+            request_data["models"],
+            request_data["optimizers"],
+        )
 
-        data = [
-            {
-                "name": run["hash"].split(":")[0],
-                "repetition": run["repetition"],
-                "trained_iterations": db.training_stats.find(
-                    {"run": run["id"]}
-                ).count(),
-                "started": datetime.fromtimestamp(run["started"])
-                if run["started"] is not None
-                else "NA",
-                "task": run["task_config"],
-                "data": "NA",
-                "model": run["model_config"],
-                "optimizer": run["optimizer_config"],
+        db = get_db()
+        runs = [
+            {   "id": run["id"],
+                "repetitions": run["execution_details"]["repetitions"],
+                "task": db.tasks.find_one(
+                    {"id": t}, projection={"id": True, "_id": False, "name": True}
+                ),
+                "dataset": db.datasets.find_one(
+                    {"id": d}, projection={"id": True, "_id": False, "name": True}
+                ),
+                "model": db.models.find_one(
+                    {"id": m}, projection={"id": True, "_id": False, "name": True}
+                ),
+                "optimizer": db.optimizers.find_one(
+                    {"id": o}, projection={"id": True, "_id": False, "name": True}
+                ),
             }
-            for run in db.runs.find({})
+            for t, d, m, o in run_component_ids
+            if (run:=db.runs.find_one({"task": t, "dataset": d, "model": m, "optimizer": o}))
+            is not None
         ]
-        raise NotImplementedError("Return json with runs filtered by post data")
+        return jsonify(runs)
+
+        # data = [
+        #     {
+        #         "name": run["hash"].split(":")[0],
+        #         "repetition": run["repetition"],
+        #         "trained_iterations": db.training_stats.find(
+        #             {"run": run["id"]}
+        #         ).count(),
+        #         "started": datetime.fromtimestamp(run["started"])
+        #         if run["started"] is not None
+        #         else "NA",
+        #         "task": run["task_config"],
+        #         "data": "NA",
+        #         "model": run["model_config"],
+        #         "optimizer": run["optimizer_config"],
+        #     }
+        #     for run in db.runs.find({})
+        # ]
+        # raise NotImplementedError("Return json with runs filtered by post data")
 
     return render_template("dacapo/runs.html")
 

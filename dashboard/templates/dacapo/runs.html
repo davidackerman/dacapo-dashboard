@@ -7,18 +7,22 @@
 {% block extra_content %}
 {{ super() }}
 <section class="content">
-    <table id="example" class="display" style="width:100%">
+    <table id="runs-table" class="display" style="width:100%">
         <thead>
             <tr>
                 <th></th>
                 <th>Name</th>
-                <th>Repitition</th>
+                <th>Repetition</th>
                 <th>Trained Iterations</th>
                 <th>Started</th>
                 <th>Task</th>
+                <th>Task ID</th>
                 <th>Data</th>
+                <th>Data ID</th>
                 <th>Model</th>
+                <th>Model ID</th>
                 <th>Optimizer</th>
+                <th>Optimizer ID</th>
             </tr>
         </thead>
         <tbody>
@@ -30,9 +34,13 @@
                 <td>{{run.trained_iterations}}</td>
                 <td>{{run.started}}</td>
                 <td>{{run.task}}</td>
+                <td>{{run.task_id}}</td>
                 <td>{{run.data}}</td>
+                <td>{{run.data_id}}</td>
                 <td>{{run.model}}</td>
+                <td>{{run.model_id}}</td>
                 <td>{{run.optimizer}}</td>
+                <td>{{run.optimizer_id}}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -43,28 +51,67 @@
 {% block javascript %}
 <script src="{{ url_for('static', filename='table.js') }}"></script>
 <script>
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "{{ url_for('dacapo.get_runs') }}", false);
-    xhr.onload = console.log("loaded")
+    // var xhr = new XMLHttpRequest();
+    // xhr.open("POST", "{{ url_for('dacapo.get_runs') }}", false);
+    // xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    // xhr.send("test="+encodeURIComponent("yoyoyo"));   
+    // console.log(xhr.status)
+    // xhr.onload = console.log("loaded")
     let checklists = document.getElementById("common-checklists").querySelectorAll(".checklist");
-    let data = { "tasks": new Set(), "datasets": new Set(), "models": new Set(), "optimizers": new Set(), "users": new Set() };
+    let table = $("#runs-table").DataTable({
+        columnDefs: [{
+            orderable: false,
+            className: 'select-checkbox',
+            targets: 0
+        }, {
+            "targets": [6],
+            "visible": false
+        }, {
+            "targets": [8],
+            "visible": false
+        }, {
+            "targets": [10],
+            "visible": false
+        }, {
+            "targets": [12],
+            "visible": false
+        }],
+        select: {
+            style: 'os',
+            selector: 'td:first-child'
+        },
+        order: [[1, 'asc']]
+    });
+    let ids = { "tasks": new Set(), "datasets": new Set(), "models": new Set(), "optimizers": new Set(), "users": new Set() };
     console.log(checklists);
     checklists.forEach(checklist => {
-        let checklist_name = checklist.childNodes[1].textContent.toLowerCase();
-        console.log(checklist_name)
+        let checklist_name = checklist.childNodes[1].textContent.toLowerCase().replace(/\s+/g, '');
+        console.log(checklist_name);
+        table.clear();
         checklist.querySelectorAll("input").forEach(element => {
             element.addEventListener('change', function () {
                 console.log(element);
                 if (this.checked) {
-                    data[checklist_name].add(element.nextSibling.data)
+                    ids[checklist_name].add(element.id)
                 } else {
-                    data[checklist_name].delete(element.nextSibling.data)
+                    ids[checklist_name].delete(element.id)
                 }
-                console.log(checklist_name);
-                console.log(data[checklist_name]);
+                //console.log(checklist_name);
+                //console.log(ids[checklist_name]);
+
+                let array_data = Object.keys(ids).reduce(function (o, x) { o[x] = Array.from(ids[x]); return o; }, {});
+                fetch("{{ url_for('dacapo.get_runs') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(array_data) }).then(response => response.json()).then(ids => {
+                    let rows = [];
+                    ids.forEach((run) => {
+                        rows.push([
+                        "","", run.repetitions, "", "", run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.model.name, run.model.id, run.optimizer.name, run.optimizer.id]);
+                    })
+                    console.log(rows)
+                    table.rows.add(rows).draw();
             });
 
         })
     });
+});
 </script>
 {% endblock %}
