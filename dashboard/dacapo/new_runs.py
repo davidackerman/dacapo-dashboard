@@ -83,18 +83,18 @@ def create_new_run():
 
         db = get_db()
         new_runs = [
-            {
+            {   
                 "task": db.tasks.find_one(
-                    {"id": t}, projection={"id": True, "_id": False, "name": True}
+                    {"id": t}, projection={"_id": False}
                 ),
                 "dataset": db.datasets.find_one(
-                    {"id": d}, projection={"id": True, "_id": False, "name": True}
+                    {"id": d}, projection={"_id": False}
                 ),
                 "model": db.models.find_one(
-                    {"id": m}, projection={"id": True, "_id": False, "name": True}
+                    {"id": m}, projection={"_id": False}
                 ),
                 "optimizer": db.optimizers.find_one(
-                    {"id": o}, projection={"id": True, "_id": False, "name": True}
+                    {"id": o}, projection={"_id": False}
                 ),
             }
             for t, d, m, o in run_component_ids

@@ -39,9 +39,10 @@
     <table id="new-runs-table" class="display" style="width:100%">
         <thead>
             <tr>
-                <th></th>
+                <th>Select</th>
                 <th>Name</th>
                 <th>Run ID</th>
+                <th>Run Settings</th>
                 <th>Task</th>
                 <th>Task ID</th>
                 <th>Data</th>
@@ -58,6 +59,7 @@
                 <td></td>
                 <td>{{run.name}}</td>
                 <td>{{run.id}}</td>
+                <td>{{run}}</td>
                 <td>{{run.task}}</td>
                 <td>{{run.task_id}}</td>
                 <td>{{run.data}}</td>
@@ -119,8 +121,13 @@
                 $(row).addClass('existing_job');
                 $('td', row).removeClass('select-checkbox');
             }
-        }
-        ,
+            $.each($('td', row), function (colIndex) {
+                if(colIndex!=0){
+                    $(this).attr('title', data[3]);
+                    $(this).attr("onclick","copyJsonData(this.title)")
+                }
+            });
+        },
         columnDefs: [{
             orderable: false,
             className: 'select-checkbox',
@@ -128,17 +135,21 @@
         }, {
             "targets": [2],
             "visible": false
-        }, {
-            "targets": [4],
+        },
+        {
+            "targets": [3],
             "visible": false
         }, {
-            "targets": [6],
+            "targets": [5],
             "visible": false
         }, {
-            "targets": [8],
+            "targets": [7],
             "visible": false
         }, {
-            "targets": [10],
+            "targets": [9],
+            "visible": false
+        }, {
+            "targets": [11],
             "visible": false
         }],
         select: {
@@ -183,7 +194,7 @@
                     let rows = [];
                     ids.forEach((run) => {
                         rows.push([
-                            "", "", "", run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.model.name, run.model.id, run.optimizer.name, run.optimizer.id, true]);
+                            "", "", "", JSON.stringify(run, null, 2), run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.model.name, run.model.id, run.optimizer.name, run.optimizer.id, true]);
                     })
                     table.rows.add(rows).draw();
                 });
@@ -193,7 +204,7 @@
                     let rows = [];
                     ids.forEach((run) => {
                         rows.push([
-                            "", "", run.id, run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.model.name, run.model.id, run.optimizer.name, run.optimizer.id, false]);
+                            "", "", run.id, JSON.stringify(run, null, 2), run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.model.name, run.model.id, run.optimizer.name, run.optimizer.id, false]);
                     })
                     table.rows.add(rows).draw();
                 });
@@ -226,7 +237,6 @@
         return row_data
     }
 
-
     let run_form = document.getElementById("run-form");
     run_form.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -245,7 +255,6 @@
             }
         });
     })
-
 
 </script>
 {% endblock %}

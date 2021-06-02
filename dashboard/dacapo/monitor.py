@@ -9,6 +9,9 @@ import dacapo
 from datetime import datetime
 import itertools
 
+from bson import json_util
+import json
+
 @bp.route("/runs", methods=["GET","POST"])
 def get_runs():
     if request.method == "GET":
@@ -26,25 +29,25 @@ def get_runs():
         db = get_db()
         runs = [
             {   "id": run["id"],
-                "repetitions": run["execution_details"]["repetitions"],
+                "execution_details": run["execution_details"],
                 "task": db.tasks.find_one(
-                    {"id": t}, projection={"id": True, "_id": False, "name": True}
+                    {"id": t}, projection={"_id": False}
                 ),
                 "dataset": db.datasets.find_one(
-                    {"id": d}, projection={"id": True, "_id": False, "name": True}
+                    {"id": d}, projection={"_id": False}
                 ),
                 "model": db.models.find_one(
-                    {"id": m}, projection={"id": True, "_id": False, "name": True}
+                    {"id": m}, projection={"_id": False}
                 ),
                 "optimizer": db.optimizers.find_one(
-                    {"id": o}, projection={"id": True, "_id": False, "name": True}
+                    {"id": o}, projection={"_id": False}
                 ),
             }
             for t, d, m, o in run_component_ids
             if (run:=db.runs.find_one({"task": t, "dataset": d, "model": m, "optimizer": o}))
             is not None
         ]
-        return jsonify(runs)
+        return jsonify( runs )
 
         # data = [
         #     {
