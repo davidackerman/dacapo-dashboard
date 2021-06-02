@@ -188,6 +188,6 @@ input[type=submit] {
     border: 2px solid var(--alert);
 }
 
-tr.darkred td{
-    color: darkred;
+tr.existing_job td{
+    color: gray;
   }
