@@ -131,12 +131,13 @@
         let new_id = id + "[" + num_elements + "]";
         new_element.setAttribute("id", new_id);
         new_element.setAttribute("class", "list_element");
-        fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": element, "id_prefix": new_id }) }).then(response => response.json()).then(data => {
+        fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": element, "id_prefix": new_id, "value": "" }) }).then(response => response.json()).then(data => {
             let html = data["html"];
             new_element.innerHTML = html;
             list_div.appendChild(new_element);
 
         });
+        console.log(num_elements)
     }
     function remove_one(id, element) {
         let list_div = document.getElementById(id + "_elements");

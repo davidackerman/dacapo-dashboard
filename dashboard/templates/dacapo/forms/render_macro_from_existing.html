@@ -1,4 +1,6 @@
-{% macro render_form(fields, id_prefix, value) %}
+{% extends 'dacapo/forms/base_form.html' %}
+
+{% macro render_form_from_existing(fields, task_to_copy, id_prefix) %}
 
 {% for field, field_data in fields.items() %}
 
@@ -8,7 +10,7 @@
     </label>
     <span class="configurable_helptext">{{ field_data.get('help_text') }}</span>
     <div id="{{ id_prefix }}_{{ field }}_input">
-        {{ render_field(field, field_data, id_prefix + "." + field, value) }}
+        {{ render_field_from_existing(field, field_data, task_to_copy[field], id_prefix + "." + field) }}
     </div>
 </div>
 
@@ -16,27 +18,28 @@
 
 {% endmacro %}
 
+{{ super() }}
 
-{% macro render_field(field, field_data, id_prefix, value) %}
+{% macro render_field_from_existing(field, field_data, field_values_to_copy, id_prefix) %}
 
 {% if field_data.type == "int" %}
 
-<input name="{{id_prefix}}" type="number" {% if field_data.default is not none %} value="{{ field_data.default }}" {%
+<input name="{{id_prefix}}" type="number" {% if field_values_to_copy is not none %} value="{{ field_values_to_copy }}" {%
     endif %}>
 
 {% elif field_data.type == "str" %}
 
-<input name="{{id_prefix}}" type="text" {% if field_data.default is not none %} value="{{ field_data.default }}" {%
+<input name="{{id_prefix}}" type="text" {% if field_values_to_copy is not none %} value="{{ field_values_to_copy }}" {%
     endif %}>
 
 {% elif field_data.type == "float" %}
 
-<input name="{{id_prefix}}" type="text" {% if field_data.default is not none %} value="{{ field_data.default }}" {%
+<input name="{{id_prefix}}" type="text" {% if field_values_to_copy is not none %} value="{{ field_values_to_copy }}" {%
     endif %}>
 
 {% elif field_data.type == "path" %}
 
-<input name="{{id_prefix}}" type="text" {% if field_data.default is not none %} value="{{ field_data.default }}" {%
+<input name="{{id_prefix}}" type="text" {% if field_values_to_copy is not none %} value="{{ field_values_to_copy }}" {%
     endif %}>
 
 {% elif field_data.type == "coordinate" %}
@@ -50,7 +53,6 @@
     one</button>
 
 {% elif field_data.type == "choice" %}
-
 <select name='{{ id_prefix }}.__type__' id="{{ field }}" onchange="fetch_configurable(this, '{{ id_prefix }}')">
     <option value="" selected disabled hidden>Choose here</option>
     {% for choice in field_data.choices %}
@@ -72,6 +74,11 @@
 <div id="{{ id_prefix }}_elements">
 
 </div>
+{% if field_values_to_copy is not none %}
+    {% for field_value_to_copy in field_values_to_copy %}
+    {% endfor %}
+{% endif %}
+
 <button type="button" onclick="add_one('{{ id_prefix }}', '{{ field_data.element }}')">Add
     one</button>
 <button type="button" onclick="remove_one('{{ id_prefix }}', '{{ field_data.element }}')">Remove
@@ -97,7 +104,7 @@
 {% elif field_data.type == "configurable" %}
 
 <div>
-    {{ render_form(field_data.fields, id_prefix, value) }}
+    {{ render_form(field_data.fields, id_prefix) }}
 </div>
 
 {% elif field_data.type == "bool" %}
@@ -106,5 +113,34 @@
     <span></span>
 </div>
 {% endif %}
+<script>
+   // document.addEventListener("DOMContentLoaded", function(event) {
+    //document.onload = function(){
+    //document.onload= function() {
+     
+    //add_one('task.predictors', 'typing.Union[dacapo.tasks.predictors.affinities.Affinities, dacapo.tasks.predictors.one_hot_labels.OneHotLabels, dacapo.tasks.predictors.lsd.LSD]');
+    //if dropdown, then activate selection...and then repeat for all subdivisions
+        id = 'task.predictors';
+        element = 'typing.Union[dacapo.tasks.predictors.affinities.Affinities, dacapo.tasks.predictors.one_hot_labels.OneHotLabels, dacapo.tasks.predictors.lsd.LSD]';
+    let list_div = document.getElementById(id + "_elements");
+        let num_elements = list_div.childElementCount;
+        let new_element = document.createElement("div");
+        let new_id = id + "[" + num_elements + "]";
+        new_element.setAttribute("id", new_id);
+        new_element.setAttribute("class", "list_element");
+        fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": element, "id_prefix": new_id, "value": "" }) }).then(response => response.json()).then(data => {
+            let html = data["html"];
+            new_element.innerHTML = html;
+            list_div.appendChild(new_element);
 
+        });
+        console.log(num_elements)
+
+    console.log("finished")
+  //  });
+     </script>
 {% endmacro %}
+
+
+
+

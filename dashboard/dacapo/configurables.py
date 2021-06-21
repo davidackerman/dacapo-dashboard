@@ -22,12 +22,13 @@ def get_name(cls):
 def configurable():
     name = request.json["name"]
     id_prefix = request.json["id_prefix"]
+    loaded_value = request.json["value"] if "value" in request.json else ""
     try:
         # want to add a sub_element representing a dacapo configurable element
         configurable = getattr(dacapo.configurables, name)
         fields = parse_fields(configurable)
         html = render_template(
-            "dacapo/forms/subform.html", fields=fields, id_prefix=id_prefix
+            "dacapo/forms/subform.html", fields=fields, id_prefix=id_prefix, value=loaded_value
         )
         return jsonify({"html": html})
     except AttributeError:
@@ -37,7 +38,7 @@ def configurable():
             field_type = eval(name)
         field = get_field_type(field_type, {})
         html = render_template(
-            "dacapo/forms/field.html", field=field, id_prefix=id_prefix
+            "dacapo/forms/field.html", field=field, id_prefix=id_prefix, value=loaded_value
         )
         return jsonify({"html": html})
 
