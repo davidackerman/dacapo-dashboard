@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, jsonify
 import dacapo
-from dacapo.converter import converter
-from dashboard.db import get_db
+from dacapo.store.converter import converter
+from dashboard.stores import get_stores
 
 from .blue_print import bp
 from .configurables import parse_fields
@@ -17,7 +17,7 @@ def new_optimizer():
             new_optimizer = converter.structure(data, dacapo.configurables.Optimizer)
             print(new_optimizer)
             new_optimizer.verify()
-            db = get_db()
+            db = get_stores()
             db.add_optimizer(new_optimizer)
             return jsonify({"success": True})
         except Exception as e:

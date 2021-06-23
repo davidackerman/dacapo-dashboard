@@ -1,24 +1,16 @@
-from dashboard.db import get_db
+from dashboard.stores import get_stores
 from bson.json_util import dumps
 
 import hashlib
 
 
 def get_checklist_data():
-    db = get_db()
+    config_store = get_stores().config
     context = {
-        "tasks": [(task["id"], task.get("name", "UGH"), dumps(task, indent=2)) for task in db.tasks.find({})],
-        "datasets": [
-            (dataset["id"], dataset.get("name", "UGH"), dumps(dataset, indent=2))
-            for dataset in db.datasets.find({})
-        ],
-        "models": [
-            (model["id"], model.get("name", "UGH"), dumps(model, indent=2)) for model in db.models.find({})
-        ],
-        "optimizers": [
-            (optimizer["id"], optimizer.get("name", "UGH"), dumps(optimizer, indent=2))
-            for optimizer in db.optimizers.find({})
-        ],
-        "users": [user["username"] for user in db.users.find({})],
+        "tasks": config_store.retrieve_all_task_configs(),
+        "datasets": config_store.retrieve_all_dataset_configs(),
+        "architectures": config_store.retrieve_all_architecture_configs(),
+        "trainers": config_store.retrieve_all_trainer_configs(),
+        "users": [''] #TODO: users...user["username"] for user in config_store.users.find({})],
     }
     return context

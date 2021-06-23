@@ -33,9 +33,9 @@ def create_app(test_config=None):
     def main():
         return render_template("base.html")
 
-    from . import db
+    from . import stores
     
-    db.init_app(app)
+    stores.init_app(app)
 
     from . import auth
 

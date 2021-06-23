@@ -1,6 +1,6 @@
 from flask import render_template, request, jsonify
 
-from dashboard.db import get_db
+from dashboard.stores import get_stores
 from .blue_print import bp
 from .helpers import get_checklist_data
 
@@ -11,7 +11,7 @@ from bson import Int64
 @bp.route("/delete_configs", methods=["POST"])
 def delete_configs():
     if request.method == "POST":
-        db = get_db()
+        db = get_stores()
         request_data = request.json
         deleted_configs = []
 
@@ -81,7 +81,7 @@ def create_new_run():
             request_data["optimizers"],
         )
 
-        db = get_db()
+        db = get_stores()
         new_runs = [
             {   
                 "task": db.tasks.find_one(

@@ -1,10 +1,10 @@
 from flask import render_template, request, jsonify
 import dacapo
-from dacapo.converter import converter
+from dacapo.store.converter import converter
 
 from .blue_print import bp
 from .configurables import parse_fields
-from dashboard.db import get_db
+from dashboard.stores import get_stores
 
 import random
 
@@ -16,7 +16,7 @@ def new_dataset():
             data = request.json
             new_dataset = converter.structure(data, dacapo.configurables.Dataset)
             new_dataset.verify()
-            db = get_db()
+            db = get_stores()
             db.add_dataset(new_dataset)
             return jsonify({"success": True})
         except Exception as e:

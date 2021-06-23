@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify
-from dacapo.converter import converter
+from dacapo.store.converter import converter
 
-from dashboard.db import get_db
+from dashboard.stores import get_stores
 from .blue_print import bp
 from .helpers import get_checklist_data
 import dacapo
@@ -26,7 +26,7 @@ def get_runs():
             request_data["optimizers"],
         )
 
-        db = get_db()
+        config_store = get_stores().config
         runs = [
             {   "id": run["id"],
                 "execution_details": run["execution_details"],

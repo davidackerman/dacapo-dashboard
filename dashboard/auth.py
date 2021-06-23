@@ -12,19 +12,19 @@ from flask import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from dashboard.db import get_db
+from dashboard.stores import get_stores
 
 from bson.objectid import ObjectId
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
-
+#TODO: Where to put users now
 @bp.route("/register", methods=("GET", "POST"))
 def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        db = get_db()
+        db = get_stores()
         error = None
 
         if not username:
@@ -50,7 +50,7 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        db = get_db()
+        db = get_stores()
         error = None
         user = db.users.find_one({"username": username})
 
@@ -77,7 +77,7 @@ def load_logged_in_user():
         g.user = None
     else:
         g.user = (
-            get_db().users.find_one({"_id": ObjectId(user_id)})
+            get_stores().users.find_one({"_id": ObjectId(user_id)})
         )
 
 

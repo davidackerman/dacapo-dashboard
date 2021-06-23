@@ -1,6 +1,6 @@
 from flask import render_template, request, jsonify
 
-from dashboard.db import get_db
+from dashboard.stores import get_stores
 from .blue_print import bp
 from .helpers import get_checklist_data
 
@@ -10,7 +10,7 @@ from datetime import datetime
 @bp.route("/results", methods=["GET", "POST"])
 def get_results():
     if request.method == "GET":
-        db = get_db()
+        db = get_stores()
         context = get_checklist_data()
         context.update(
             {
@@ -30,7 +30,7 @@ def get_results():
         )
         return render_template("dacapo/results.html", **context)
     elif request.method == "POST":
-        db = get_db()
+        db = get_stores()
         request_data = request.json
         runs = [
             {
