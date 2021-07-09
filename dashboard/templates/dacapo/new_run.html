@@ -14,13 +14,13 @@
     <button type="submit"><i class="fa fa-plus"></i></button>
 </form>
 {% endblock %}
-{% block model_checklist %}
-<form action="{{ url_for('dacapo.new_model') }}" class="plus-one">
+{% block architecture_checklist %}
+<form action="{{ url_for('dacapo.new_architecture') }}" class="plus-one">
     <button type="submit"><i class="fa fa-plus"></i></button>
 </form>
 {% endblock %}
-{% block optimizer_checklist %}
-<form action="{{ url_for('dacapo.new_optimizer') }}" class="plus-one">
+{% block trainer_checklist %}
+<form action="{{ url_for('dacapo.new_trainer') }}" class="plus-one">
     <button type="submit"><i class="fa fa-plus"></i></button>
 </form>
 {% endblock %}
@@ -47,10 +47,10 @@
                 <th>Task ID</th>
                 <th>Data</th>
                 <th>Data ID</th>
-                <th>Model</th>
-                <th>Model ID</th>
-                <th>Optimizer</th>
-                <th>Optimizer ID</th>
+                <th>Architecture</th>
+                <th>Architecture ID</th>
+                <th>trainer</th>
+                <th>trainer ID</th>
             </tr>
         </thead>
         <tbody>
@@ -64,10 +64,10 @@
                 <td>{{run.task_id}}</td>
                 <td>{{run.data}}</td>
                 <td>{{run.data_id}}</td>
-                <td>{{run.model}}</td>
-                <td>{{run.model_id}}</td>
-                <td>{{run.optimizer}}</td>
-                <td>{{run.optimizer_id}}</td>
+                <td>{{run.architecture}}</td>
+                <td>{{run.architecture_id}}</td>
+                <td>{{run.trainer}}</td>
+                <td>{{run.trainer_id}}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -169,7 +169,7 @@
         }
     });
 
-    let ids = { "tasks": new Set(), "datasets": new Set(), "models": new Set(), "optimizers": new Set(), "users": new Set() };
+    let ids = { "tasks": new Set(), "datasets": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
     let elements = Array.from(checklists).reduce(function (o, x) {
         x.querySelectorAll("input").forEach(element => {
             o[element.id] = element
@@ -194,7 +194,7 @@
                     let rows = [];
                     ids.forEach((run) => {
                         rows.push([
-                            "", "", "", JSON.stringify(run, null, 2), run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.model.name, run.model.id, run.optimizer.name, run.optimizer.id, true]);
+                            "", "", "", JSON.stringify(run, null, 2), run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.architecture.name, run.architecture.id, run.trainer.name, run.trainer.id, true]);
                     })
                     table.rows.add(rows).draw();
                 });
@@ -204,7 +204,7 @@
                     let rows = [];
                     ids.forEach((run) => {
                         rows.push([
-                            "", "", run.id, JSON.stringify(run, null, 2), run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.model.name, run.model.id, run.optimizer.name, run.optimizer.id, false]);
+                            "", "", run.id, JSON.stringify(run, null, 2), run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.architecture.name, run.architecture.id, run.trainer.name, run.trainer.id, false]);
                     })
                     table.rows.add(rows).draw();
                 });
@@ -231,7 +231,7 @@
         let row_data = [];
         rows.forEach((row) => {
             row_data.push({
-                "name": row[1], "task": [row[5], row[4]], "dataset": [row[7], row[6]], "model": [row[9], row[8]], "optimizer": [row[11], row[10]]
+                "name": row[1], "task": [row[5], row[4]], "dataset": [row[7], row[6]], "architecture": [row[9], row[8]], "trainer": [row[11], row[10]]
             });
         });
         return row_data

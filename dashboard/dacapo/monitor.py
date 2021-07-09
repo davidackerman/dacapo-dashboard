@@ -6,13 +6,10 @@ from .blue_print import bp
 from .helpers import get_checklist_data
 import dacapo
 
-from datetime import datetime
 import itertools
 
-from bson import json_util
-import json
 
-@bp.route("/runs", methods=["GET","POST"])
+@bp.route("/runs", methods=["GET", "POST"])
 def get_runs():
     if request.method == "GET":
         context = get_checklist_data()
@@ -22,32 +19,27 @@ def get_runs():
         run_component_ids = itertools.product(
             request_data["tasks"],
             request_data["datasets"],
-            request_data["models"],
-            request_data["optimizers"],
+            request_data["architectures"],
+            request_data["trainers"],
         )
 
         config_store = get_stores().config
         runs = [
-            {   "id": run["id"],
+            {"id": run["id"],
                 "execution_details": run["execution_details"],
-                "task": db.tasks.find_one(
-                    {"id": t}, projection={"_id": False}
-                ),
-                "dataset": db.datasets.find_one(
-                    {"id": d}, projection={"_id": False}
-                ),
-                "model": db.models.find_one(
-                    {"id": m}, projection={"_id": False}
-                ),
-                "optimizer": db.optimizers.find_one(
-                    {"id": o}, projection={"_id": False}
-                ),
-            }
-            for t, d, m, o in run_component_ids
-            if (run:=db.runs.find_one({"task": t, "dataset": d, "model": m, "optimizer": o}))
+                "task": config_store.retrieve_task_config(task),
+                "dataset": config_store.retrieve_dataset_config(dataset),
+                "architecture": config_store.retrieve_architecture_config(
+                    architecture),
+                "trainers": config_store.retrieve_trainer_config(trainer)
+             }
+
+            for task, dataset, architecture, trainer in run_component_ids
+            if (run := config_store.retrieve_run_config(
+                '_'.join([task, dataset, architecture, trainer])))
             is not None
         ]
-        return jsonify( runs )
+        return jsonify(runs)
 
         # data = [
         #     {
@@ -71,7 +63,7 @@ def get_runs():
     return render_template("dacapo/runs.html")
 
 
-@bp.route("/apply_config", methods=["GET"])
+@ bp.route("/apply_config", methods=["GET"])
 def apply_config():
     if request.method == "GET":
         return render_template("dacapo/apply_config.html")
@@ -79,18 +71,19 @@ def apply_config():
     return render_template("dacapo/apply_config.html")
 
 
-@bp.route("/start_runs", methods=["POST"])
+@ bp.route("/start_runs", methods=["POST"])
 def start_runs():
     if request.method == "POST":
-        config_json = request.json
-        run_execution = converter.structure(config_json, dacapo.configs.RunExecution)
-        run_configs = [
+        config_json   =   request.json
+        run_execution   =   converter.structure(
+            config_json, dacapo.configs.RunExecution)
+        run_configs   =   [
             dacapo.configs.Run(
                 name=run["name"],
                 task=run["task"][0],
                 dataset=run["dataset"][0],
-                model=run["model"][0],
-                optimizer=run["optimizer"][0],
+                architectures=run["architectures"][0],
+                trainer=run["trainer"][0],
                 execution_details=run_execution,
                 repetition=i,
             )
@@ -99,5 +92,5 @@ def start_runs():
         ]
 
         dacapo.run_all(run_configs, run_execution.num_workers)
-        
-    return jsonify({ "success" : True})
+
+    return jsonify({"success": True})

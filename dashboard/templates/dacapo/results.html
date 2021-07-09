@@ -17,8 +17,8 @@
                 <th>Started</th>
                 <th>Task</th>
                 <th>Data</th>
-                <th>Model</th>
-                <th>Optimizer</th>
+                <th>Architecture</th>
+                <th>Trainer</th>
             </tr>
         </thead>
         <tbody>
@@ -31,8 +31,8 @@
                 <td>{{run.started}}</td>
                 <td>{{run.task}}</td>
                 <td>{{run.data}}</td>
-                <td>{{run.model}}</td>
-                <td>{{run.optimizer}}</td>
+                <td>{{run.architecture}}</td>
+                <td>{{run.trainer}}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -57,7 +57,7 @@
 <script>
     let checklists = document.getElementById("common-checklists").querySelectorAll(".checklist");
     let table = $("#runs-table").DataTable();
-    let data = { "tasks": new Set(), "datasets": new Set(), "models": new Set(), "optimizers": new Set(), "users": new Set() };
+    let data = { "tasks": new Set(), "datasets": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
     checklists.forEach(checklist => {
         let checklist_name = checklist.childNodes[1].textContent.toLowerCase();
         checklist.querySelectorAll("input").forEach(element => {
@@ -74,7 +74,7 @@
                     data.forEach((run) => {
                         console.log("adding row:");
                         rows.push([
-                            "", run["name"], run["repetition"], run["trained_iterations"], run["started"], run["task"], run["data"], run["model"], run["optimizer"],]);
+                            "", run["name"], run["repetition"], run["trained_iterations"], run["started"], run["task"], run["data"], run["architecture"], run["trainer"],]);
                     })
                     table.rows.add(rows).draw();
                 });

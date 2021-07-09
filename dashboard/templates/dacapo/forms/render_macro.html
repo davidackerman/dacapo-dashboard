@@ -1,8 +1,43 @@
-{% macro render_form(fields, id_prefix, value) %}
+{% macro render_form_from_choice(config_name_to_fields_dict, id_prefix, value) %}
+    <select name='{{ id_prefix }}.__type__' onchange="show_corresponding_fields(this, '{{ id_prefix }}', '{{ value }}')">
+        <option value="" selected disabled hidden>Choose here</option>
+        {% for config_name,config_fields in config_name_to_fields_dict.items() %}
+        <option id='{{ config_name }}' >{{ config_name }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
+
+    {% for config_name,config_fields in config_name_to_fields_dict.items() %}
+        {{ render_form(config_name, config_fields, id_prefix, value) }}
+    {% endfor %}
+    
+    <script>
+    function show_corresponding_fields(elem, id_prefix, value) {
+        var config_name = $(elem).children(":selected").attr("id");
+        var divs = document.querySelectorAll('div[class$="_configurable_field"]');
+        for(var i=0; i<divs.length; ++i){
+            var s = divs[i].style;
+            if (divs[i].className === config_name+"_configurable_field"){
+                s.display = 'block';
+            }
+            else{
+                s.display = 'none';
+            }
+        };
+    }
+    </script>
+{% endmacro %}
+
+{% macro render_form(config_name, fields, id_prefix, value) %}
+<style>
+    div[class$='_configurable_field'] {
+        display: none;  
+    }
+</style>
 
 {% for field, field_data in fields.items() %}
 
-<div class="configurable_field">
+<div class="{{config_name}}_configurable_field">
     <label onclick="toggle_visible('{{ id_prefix }}_{{ field }}_input')">
         {{ field }} {% if field_data.get("optional") %} (Optional) {% endif %}:
     </label>
@@ -10,6 +45,7 @@
     <div id="{{ id_prefix }}_{{ field }}_input">
         {{ render_field(field, field_data, id_prefix + "." + field, value) }}
     </div>
+    <br>
 </div>
 
 {% endfor %}

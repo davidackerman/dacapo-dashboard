@@ -10,7 +10,7 @@
         </div>
         <div class="scroll_checklist">
             {% for task in tasks %}
-            <input type="checkbox" id="{{task[0]}}" /><span title="{{task[2]}}" onclick="copyJsonData(this.title)"> {{task[1]}} </span><br />
+            <input type="checkbox" id="{{task}}" /><span title="{{task}}" onclick="copyJsonData(this.title)"> {{task}} </span><br />
             <br />
             {% endfor %}
         </div>
@@ -24,33 +24,36 @@
         </div>
         <div class="scroll_checklist">
             {% for dataset in datasets %}
-            <input type="checkbox" id="{{dataset[0]}}" /><span title="{{dataset[2]}}" onclick="copyJsonData(this.title)"> {{dataset[1]}} </span><br />
+            <input type="checkbox" id="{{dataset}}" /><span title="{{dataset}}" onclick="copyJsonData(this.title)"> {{dataset}}
+            </span><br />
             {% endfor %}
         </div>
 
     </div>
     <div class="checklist">
         <div class="checklist_header">
-            <h3 class="checklist_name">Models</h3>
-            {% block model_checklist %}
+            <h3 class="checklist_name">Architectures</h3>
+            {% block architecture_checklist %}
             {% endblock %}
         </div>
         <div class="scroll_checklist">
-            {% for model in models %}
-            <input type="checkbox" id="{{model[0]}}" /><span title="{{model[2]}}" onclick="copyJsonData(this.title)"> {{model[1]}} </span><br />
+            {% for architecture in architectures %}
+            <input type="checkbox" id="{{architecture}}" /><span title="{{architecture}}" onclick="copyJsonData(this.title)">
+                {{architecture[1]}} </span><br />
             {% endfor %}
         </div>
 
     </div>
     <div class="checklist">
         <div class="checklist_header">
-            <h3 class="checklist_name">Optimizers</h3>
-            {% block optimizer_checklist %}
+            <h3 class="checklist_name">Trainers</h3>
+            {% block trainer_checklist %}
             {% endblock %}
         </div>
         <div class="scroll_checklist">
-            {% for optimizer in optimizers %}
-            <input type="checkbox" id="{{optimizer[0]}}" /><span title="{{optimizer[2]}}" onclick="copyJsonData(this.title)"> {{optimizer[1]}} </span><br />
+            {% for trainer in trainers %}
+            <input type="checkbox" id="{{trainer}}" /><span title="{{trainer}}" onclick="copyJsonData(this.title)">
+                {{trainer[1]}} </span><br />
             {% endfor %}
         </div>
 

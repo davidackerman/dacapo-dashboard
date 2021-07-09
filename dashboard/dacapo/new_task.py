@@ -6,24 +6,28 @@ from .blue_print import bp
 from .configurables import parse_fields
 from dashboard.stores import get_stores
 
+from .helpers import get_config_name_to_fields_dict
+
 
 @bp.route("/new_task", methods=["GET", "POST"])
 def new_task():
     if request.method == "POST":
         try:
+            print("beforeeeeeee")
             data = request.json
-            new_task = converter.structure(data, dacapo.configurables.Task)
-            new_task.verify()
-            db = get_stores()
-            db.add_task(new_task)
+            print(data)
+            config_store = get_stores().config
+            config_store.store_task_config(data)
             return jsonify({"success": True})
         except Exception as e:
             raise (e)
             return jsonify({"success": False, "error": str(e)})
 
-    fields = parse_fields(dacapo.configurables.Task)
-    print(fields)
-    return render_template("dacapo/forms/task.html", fields=fields, id_prefix="task")
+    config_name_to_fields_dict = get_config_name_to_fields_dict("Task")
+    return render_template("dacapo/forms/task.html",
+                           fields=config_name_to_fields_dict,
+                           id_prefix="task")
+
 
 @bp.route("/new_task_from_existing", methods=["GET", "POST"])
 def new_task_from_existing():
@@ -42,4 +46,6 @@ def new_task_from_existing():
     fields = parse_fields(dacapo.configurables.Task)
     task_to_copy = get_stores().tasks.find_one({})
     print(task_to_copy)
-    return render_template("dacapo/forms/task_from_existing.html", fields=fields, task_to_copy = task_to_copy, id_prefix="task")
+    return render_template("dacapo/forms/task_from_existing.html",
+                           fields=fields,
+                           task_to_copy=task_to_copy, id_prefix="task")

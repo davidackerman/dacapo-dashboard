@@ -44,8 +44,8 @@ def get_results():
                 else "NA",
                 "task": run["task_config"],
                 "data": "NA",
-                "model": run["model_config"],
-                "optimizer": run["optimizer_config"],
+                "architecture": run["architecture_config"],
+                "trainer": run["trainer_config"],
             }
             for run in db.runs.find(
                 {"task_config": {"$in": [x.strip() for x in request_data["tasks"]]}}

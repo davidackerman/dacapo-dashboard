@@ -5,22 +5,23 @@ from .blue_print import bp
 from .helpers import get_checklist_data
 
 import itertools
-from bson import Int64
 
 
 @bp.route("/delete_configs", methods=["POST"])
 def delete_configs():
     if request.method == "POST":
-        db = get_stores()
+        config_store = get_stores().config
         request_data = request.json
         deleted_configs = []
 
         for task in request_data["tasks"]:
-            task_doc = db.tasks.find_one({"id": task})
+            task_doc = config_store.retrieve_task_config(task)
             assert task_doc is not None
             db.tasks.delete_one(task_doc)
             deleted_configs.append(
-                {"config_type": "tasks", "name": task_doc["name"], "id": task_doc["id"]}
+                {"config_type": "tasks",
+                 "name": task_doc["name"],
+                 "id": task_doc["id"]}
             )
 
         for dataset in request_data["datasets"]:
@@ -35,30 +36,30 @@ def delete_configs():
                 }
             )
 
-        for model in request_data["models"]:
-            model_doc = db.models.find_one({"id": model})
-            assert model_doc is not None
-            db.models.delete_one(model_doc)
+        for architecture in request_data["architectures"]:
+            architecture_doc = db.architectures.find_one({"id": architecture})
+            assert architecture_doc is not None
+            db.architectures.delete_one(architecture_doc)
             deleted_configs.append(
                 {
-                    "config_type": "models",
-                    "name": model_doc["name"],
-                    "id": model_doc["id"],
+                    "config_type": "architectures",
+                    "name": architecture_doc["name"],
+                    "id": architecture_doc["id"],
                 }
             )
 
-        for optimizer in request_data["optimizers"]:
-            optimizer_doc = db.optimizers.find_one({"id": optimizer})
+        for trainer in request_data["trainers"]:
+            trainer_doc = db.trainers.find_one({"id": trainer})
             assert (
-                optimizer_doc is not None
-            ), f"Cannot find optimizer with id: {optimizer}"
-            db.optimizers.delete_one(optimizer_doc)
-            print(optimizer_doc["id"], optimizer)
+                trainer_doc is not None
+            ), f"Cannot find trainer with id: {trainer}"
+            db.trainers.delete_one(trainer_doc)
+            print(trainer_doc["id"], trainer)
             deleted_configs.append(
                 {
-                    "config_type": "optimizers",
-                    "name": optimizer_doc["name"],
-                    "id": str(optimizer_doc["id"]),
+                    "config_type": "trainers",
+                    "name": trainer_doc["name"],
+                    "id": str(trainer_doc["id"]),
                 }
             )
             print(jsonify(deleted_configs))
@@ -77,28 +78,22 @@ def create_new_run():
         run_component_ids = itertools.product(
             request_data["tasks"],
             request_data["datasets"],
-            request_data["models"],
-            request_data["optimizers"],
+            request_data["architectures"],
+            request_data["trainers"],
         )
 
-        db = get_stores()
+        config_store = get_stores().config
         new_runs = [
-            {   
-                "task": db.tasks.find_one(
-                    {"id": t}, projection={"_id": False}
-                ),
-                "dataset": db.datasets.find_one(
-                    {"id": d}, projection={"_id": False}
-                ),
-                "model": db.models.find_one(
-                    {"id": m}, projection={"_id": False}
-                ),
-                "optimizer": db.optimizers.find_one(
-                    {"id": o}, projection={"_id": False}
-                ),
+            {
+                "task": config_store.retrieve_task_config(task),
+                "dataset": config_store.retrieve_dataset_config(dataset),
+                "architecture": config_store.retrieve_architecture_config(
+                    architecture),
+                "trainers": config_store.retrieve_trainer_config(trainer)
             }
-            for t, d, m, o in run_component_ids
-            if db.runs.find_one({"task": t, "dataset": d, "model": m, "optimizer": o})
+            for task, dataset, architecture, trainer in run_component_ids
+            if config_store.retrieve_run_config(
+                '_'.join[task, dataset, architecture, trainer])
             is None
         ]
         print(new_runs)

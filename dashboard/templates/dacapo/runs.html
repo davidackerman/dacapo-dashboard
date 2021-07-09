@@ -20,10 +20,10 @@
                 <th>Task ID</th>
                 <th>Data</th>
                 <th>Data ID</th>
-                <th>Model</th>
-                <th>Model ID</th>
-                <th>Optimizer</th>
-                <th>Optimizer ID</th>
+                <th>Architecture</th>
+                <th>Architecture ID</th>
+                <th>Trainer</th>
+                <th>Trainer ID</th>
             </tr>
         </thead>
         <tbody>
@@ -39,10 +39,10 @@
                 <td>{{run.task_id}}</td>
                 <td>{{run.data}}</td>
                 <td>{{run.data_id}}</td>
-                <td>{{run.model}}</td>
-                <td>{{run.model_id}}</td>
-                <td>{{run.optimizer}}</td>
-                <td>{{run.optimizer_id}}</td>
+                <td>{{run.architecture}}</td>
+                <td>{{run.architecture_id}}</td>
+                <td>{{run.trainer}}</td>
+                <td>{{run.trainer_id}}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -95,7 +95,7 @@
         },
         order: [[1, 'asc']]
     });
-    let ids = { "tasks": new Set(), "datasets": new Set(), "models": new Set(), "optimizers": new Set(), "users": new Set() };
+    let ids = { "tasks": new Set(), "datasets": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
     console.log(checklists);
     checklists.forEach(checklist => {
         let checklist_name = checklist.childNodes[1].textContent.toLowerCase().replace(/\s+/g, '');
@@ -117,7 +117,7 @@
                     let rows = [];
                     ids.forEach((run) => {
                         rows.push([
-                        "","", JSON.stringify(run, null, 2), run.execution_details.repetitions, "", "", run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.model.name, run.model.id, run.optimizer.name, run.optimizer.id]);
+                        "","", JSON.stringify(run, null, 2), run.execution_details.repetitions, "", "", run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.architecture.name, run.architecture.id, run.trainer.name, run.trainer.id]);
                     })
                     console.log(rows)
                     table.rows.add(rows).draw();

@@ -3,10 +3,8 @@ import dacapo
 from dacapo.store.converter import converter
 
 from .blue_print import bp
-from .configurables import parse_fields
 from dashboard.stores import get_stores
-
-import random
+from .helpers import get_config_name_to_fields_dict
 
 
 @bp.route("/new_dataset", methods=["GET", "POST"])
@@ -14,7 +12,8 @@ def new_dataset():
     if request.method == "POST":
         try:
             data = request.json
-            new_dataset = converter.structure(data, dacapo.configurables.Dataset)
+            new_dataset = converter.structure(
+                data, dacapo.configurables.Dataset)
             new_dataset.verify()
             db = get_stores()
             db.add_dataset(new_dataset)
@@ -23,7 +22,9 @@ def new_dataset():
             raise (e)
             return jsonify({"success": False, "error": str(e)})
 
-    fields = parse_fields(dacapo.configurables.Dataset)
+    config_name_to_fields_dict = get_config_name_to_fields_dict("Dataset")
     return render_template(
-        "dacapo/forms/dataset.html", fields=fields, id_prefix="dataset"
+        "dacapo/forms/dataset.html",
+        fields=config_name_to_fields_dict,
+        id_prefix="dataset"
     )
