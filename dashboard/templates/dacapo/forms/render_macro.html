@@ -1,5 +1,5 @@
-{% macro render_form_from_choice(config_name_to_fields_dict, id_prefix, value) %}
-    <select name='{{ id_prefix }}.__type__' onchange="show_corresponding_fields(this, '{{ id_prefix }}', '{{ value }}')">
+{% macro render_form_from_choice(config_name_to_fields_dict, id_prefix, value, all_names) %}
+<select name='{{ id_prefix }}.__type__' onchange="show_corresponding_fields(this, '{{ id_prefix }}', '{{ value }}')">
         <option value="" selected disabled hidden>Choose here</option>
         {% for config_name,config_fields in config_name_to_fields_dict.items() %}
         <option id='{{ config_name }}' >{{ config_name }}</option>
@@ -8,7 +8,7 @@
     <br><br>
 
     {% for config_name,config_fields in config_name_to_fields_dict.items() %}
-        {{ render_form(config_name, config_fields, id_prefix, value) }}
+        {{ render_form(config_name, config_fields, id_prefix, value, all_names) }}
     {% endfor %}
     
     <script>
@@ -28,11 +28,16 @@
     </script>
 {% endmacro %}
 
-{% macro render_form(config_name, fields, id_prefix, value) %}
+{% macro render_form(config_name, fields, id_prefix, value, all_names) %}
 <style>
     div[class$='_configurable_field'] {
         display: none;  
     }
+    div[id='invalid_name_notification'] {
+        display: none;
+        color: red;
+    }
+
 </style>
 
 {% for field, field_data in fields.items() %}
@@ -43,7 +48,7 @@
     </label>
     <span class="configurable_helptext">{{ field_data.get('help_text') }}</span>
     <div id="{{ id_prefix }}_{{ field }}_input">
-        {{ render_field(field, field_data, id_prefix + "." + field, value) }}
+        {{ render_field(field, field_data, id_prefix + "." + field, value, all_names) }}
     </div>
     <br>
 </div>
@@ -53,12 +58,18 @@
 {% endmacro %}
 
 
-{% macro render_field(field, field_data, id_prefix, value) %}
+{% macro render_field(field, field_data, id_prefix, value, all_names) %}
 
 {% if field_data.type == "int" %}
 
 <input name="{{id_prefix}}" type="number" {% if field_data.default is not none %} value="{{ field_data.default }}" {%
     endif %}>
+
+{% elif field_data.type == "str" and field == "name" %}
+
+<input id="user_defined_name" name="{{id_prefix}}" type="text" {% if field_data.default is not none %}
+    value="{{ field_data.default }}" {% endif %} onkeyup="check_name('{{all_names}}')">
+<div id="invalid_name_notification">Name Already In Use!</div>
 
 {% elif field_data.type == "str" %}
 

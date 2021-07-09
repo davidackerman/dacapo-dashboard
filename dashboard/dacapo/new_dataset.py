@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, json, jsonify
 import dacapo
 from dacapo.store.converter import converter
 
@@ -26,5 +26,6 @@ def new_dataset():
     return render_template(
         "dacapo/forms/dataset.html",
         fields=config_name_to_fields_dict,
-        id_prefix="dataset"
-    )
+        id_prefix="dataset",
+        all_names=json.dumps(
+            get_stores().config.retrieve_task_names()))

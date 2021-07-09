@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, jsonify
+from flask import render_template, request, redirect, url_for, json, jsonify
 import dacapo
 from dacapo.store.converter import converter
 from dashboard.stores import get_stores
@@ -30,5 +30,6 @@ def new_trainer():
     return render_template(
         "dacapo/forms/trainer.html",
         fields=config_name_to_fields_dict,
-        id_prefix="trainer"
-    )
+        id_prefix="trainer",
+        all_names=json.dumps(
+            get_stores().config.retrieve_task_names()))

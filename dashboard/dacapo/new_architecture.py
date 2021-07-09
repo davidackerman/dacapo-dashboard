@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, json, jsonify
 import dacapo
 from dacapo.store.converter import converter
 
@@ -26,4 +26,7 @@ def new_architecture():
     config_name_to_fields_dict = get_config_name_to_fields_dict("Architecture")
     return render_template("dacapo/forms/architecture.html",
                            fields=config_name_to_fields_dict,
-                           id_prefix="architecture")
+                           id_prefix="architecture",
+                           all_names=json.dumps(
+                               get_stores().
+                               config.retrieve_architecture_names()))
