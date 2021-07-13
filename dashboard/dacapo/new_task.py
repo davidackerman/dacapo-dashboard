@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, json, jsonify
+from flask import render_template, request, json, jsonify
 import dacapo
 from dacapo.store.converter import converter
 
@@ -14,20 +14,19 @@ def new_task():
     if request.method == "POST":
         try:
             data = request.json
-            print(data)
-            config_store = get_stores().config
-            config_store.store_task_config(data)
+            get_stores().config.store_task_config(data)
             return jsonify({"success": True})
         except Exception as e:
             raise (e)
             return jsonify({"success": False, "error": str(e)})
 
     config_name_to_fields_dict = get_config_name_to_fields_dict("Task")
-    return render_template("dacapo/forms/task.html",
-                           fields=config_name_to_fields_dict,
-                           id_prefix="task",
-                           all_names=json.dumps(
-                               get_stores().config.retrieve_task_names()))
+    return render_template(
+        "dacapo/forms/task.html",
+        fields=config_name_to_fields_dict,
+        id_prefix="task",
+        all_names=json.dumps(
+            get_stores().config.retrieve_task_config_names()))
 
 
 @bp.route("/new_task_from_existing", methods=["GET", "POST"])
