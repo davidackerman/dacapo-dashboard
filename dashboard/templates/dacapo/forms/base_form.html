@@ -31,71 +31,74 @@
         console.log(names);
 
         form_elements.forEach(function (n) {
-            name = n.name;
+            if ($(n).is(':visible')) {
 
-            hold = '';
+                name = n.name;
 
-            let components = name.split('.');
-            components.shift();
-            let keys = [];
-            components.forEach(function (component, index) {
-                if (component.indexOf("[") >= 0) {
-                    let sub_components = component.split("[")
-                    let k = sub_components.shift();
-                    keys.push(k);
-                    while (sub_components.length > 0) {
-                        let next_index = sub_components.shift();
-                        let i = parseInt(next_index.substring(0, next_index.length - 1));
-                        keys.push(i);
+                hold = '';
+
+                let components = name.split('.');
+                components.shift();
+                let keys = [];
+                components.forEach(function (component, index) {
+                    if (component.indexOf("[") >= 0) {
+                        let sub_components = component.split("[")
+                        let k = sub_components.shift();
+                        keys.push(k);
+                        while (sub_components.length > 0) {
+                            let next_index = sub_components.shift();
+                            let i = parseInt(next_index.substring(0, next_index.length - 1));
+                            keys.push(i);
+                        }
                     }
+                    else {
+                        keys.push(component);
+                    }
+                })
+
+                L = keys.length;
+                function get_datatype(i) {
+                    if (i == L - 1) {
+                        // if x is the last key then it will be replaced with some value
+                        // cannot skip this case incase last key is an array index
+                        return null
+                    } else if (Number.isInteger(keys[i + 1])) {
+                        // if the next key is an integer, than this key is an array
+                        let sub_array = [];
+                        // make sure this array is long enough that indexing next key will work
+                        for (j = 0; j < keys[i + 1] + 1; j++) {
+                            sub_array.push(get_datatype(i + 1));
+                        }
+                        return sub_array;
+                    } else {
+                        // if this is not the last key, and it has sub keys, this element is an object
+                        return {}
+                    }
+                }
+
+                let sub_data = data;
+                if (L === 0) {
+                    console.log("Should not be reachable!");
                 }
                 else {
-                    keys.push(component);
-                }
-            })
-
-            L = keys.length;
-            function get_datatype(i) {
-                if (i == L - 1) {
-                    // if x is the last key then it will be replaced with some value
-                    // cannot skip this case incase last key is an array index
-                    return null
-                } else if (Number.isInteger(keys[i + 1])) {
-                    // if the next key is an integer, than this key is an array
-                    let sub_array = [];
-                    // make sure this array is long enough that indexing next key will work
-                    for (j = 0; j < keys[i + 1] + 1; j++) {
-                        sub_array.push(get_datatype(i + 1));
-                    }
-                    return sub_array;
-                } else {
-                    // if this is not the last key, and it has sub keys, this element is an object
-                    return {}
-                }
-            }
-
-            let sub_data = data;
-            if (L === 0) {
-                console.log("Should not be reachable!");
-            }
-            else {
-                keys.forEach(function (x, i) {
-                    if (i == L - 1) {
-                        // if x is the last key in keys, simply fill in the value
-                        if (n.value === "") {
-                            sub_data[x] = null
+                    keys.forEach(function (x, i) {
+                        if (i == L - 1) {
+                            // if x is the last key in keys, simply fill in the value
+                            if (n.value === "") {
+                                sub_data[x] = null
+                            } else {
+                                sub_data[x] = n.value
+                            }
                         } else {
-                            sub_data[x] = n.value
+                            if (x in sub_data || (Number.isInteger(x) && sub_data[x] != null)) {
+                                sub_data = sub_data[x]
+                            } else {
+                                sub_data[x] = get_datatype(i)
+                                sub_data = sub_data[x]
+                            }
                         }
-                    } else {
-                        if (x in sub_data || (Number.isInteger(x) && sub_data[x] != null)) {
-                            sub_data = sub_data[x]
-                        } else {
-                            sub_data[x] = get_datatype(i)
-                            sub_data = sub_data[x]
-                        }
-                    }
-                });
+                    });
+                }
             }
         });
 
