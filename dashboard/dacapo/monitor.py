@@ -1,5 +1,6 @@
 from flask import render_template, request, jsonify
 from dacapo.store.converter import converter
+from dacapo.experiments import RunConfig
 
 from dashboard.stores import get_stores
 from .blue_print import bp
@@ -74,23 +75,34 @@ def apply_config():
 @ bp.route("/start_runs", methods=["POST"])
 def start_runs():
     if request.method == "POST":
-        config_json   =   request.json
-        run_execution   =   converter.structure(
-            config_json, dacapo.configs.RunExecution)
-        run_configs   =   [
-            dacapo.configs.Run(
-                name=run["name"],
-                task=run["task"][0],
-                dataset=run["dataset"][0],
-                architectures=run["architectures"][0],
-                trainer=run["trainer"][0],
-                execution_details=run_execution,
-                repetition=i,
-            )
-            for run in config_json.pop("runs")
-            for i in range(run_execution.repetitions)
-        ]
+        print(f"request {request.json}")
+        config_json = request.json
+        config_store = get_stores().config
+        for i in range(config_json["repetitions"]):
+            for run in config_json.pop("runs"):
+                run_config_name = ("_").join[run["task_config_name"],
+                                             run["dataset_config_name"],
+                                             run["architecture_config_name"],
+                                             run["trainer_config_name"]]+":"+i
 
-        dacapo.run_all(run_configs, run_execution.num_workers)
+                run_config = RunConfig(
+                    name=run_config_name,
+                    task_config=config_store.retrieve_task_config(
+                        run["task_config_name"]),
+                    architecture_config=config_store.retrieve_architecture_config(
+                        run["architecture_config_name"]),
+                    trainer_config=config_store.retrieve_trainer_config(
+                        run["trainer_config_name"]),
+                    dataset_config=config_store.retrieve_dataset_config(
+                        run["dataset_config_name"]),
+                    repetition=1,
+                    num_iterations=run["num_iterations"],
+                    snapshot_interval=run["snapshot_interval"],
+                    validation_score='IoU',
+                    validation_score_minimize=False
+                )
+
+                config_store.store_run_config(run_config)
+                dacapo.train(run_config_name)
 
     return jsonify({"success": True})

@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify
+from flask import json, render_template, request, jsonify
 
 from dashboard.stores import get_stores
 from .blue_print import bp
@@ -6,6 +6,7 @@ from .helpers import get_checklist_data
 
 import itertools
 
+from dacapo.experiments import RunConfig
 
 @bp.route("/delete_configs", methods=["POST"])
 def delete_configs():
@@ -84,16 +85,16 @@ def create_new_run():
 
         config_store = get_stores().config
         new_runs = [
-            {
-                "task": config_store.retrieve_task_config(task),
-                "dataset": config_store.retrieve_dataset_config(dataset),
-                "architecture": config_store.retrieve_architecture_config(
-                    architecture),
-                "trainers": config_store.retrieve_trainer_config(trainer)
+            {   
+                "name": '_'.join([task, dataset, architecture, trainer]),
+                "task_config_name": task,
+                "dataset_config_name": dataset,
+                "architecture_config_name": architecture,
+                "trainer_config_name": trainer
             }
             for task, dataset, architecture, trainer in run_component_ids
             if config_store.retrieve_run_config(
-                '_'.join[task, dataset, architecture, trainer])
+                '_'.join([task, dataset, architecture, trainer]))
             is None
         ]
         print(new_runs)
