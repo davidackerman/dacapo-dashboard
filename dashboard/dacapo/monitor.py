@@ -78,12 +78,12 @@ def start_runs():
         print(f"request {request.json}")
         config_json = request.json
         config_store = get_stores().config
-        for i in range(config_json["repetitions"]):
-            for run in config_json.pop("runs"):
-                run_config_name = ("_").join[run["task_config_name"],
+        for run in config_json.pop("runs"):
+            for i in range(int(config_json["repetitions"])):
+                run_config_name = ("_").join([run["task_config_name"],
                                              run["dataset_config_name"],
                                              run["architecture_config_name"],
-                                             run["trainer_config_name"]]+":"+i
+                                             run["trainer_config_name"]])+f":{i}"
 
                 run_config = RunConfig(
                     name=run_config_name,
@@ -96,8 +96,8 @@ def start_runs():
                     dataset_config=config_store.retrieve_dataset_config(
                         run["dataset_config_name"]),
                     repetition=1,
-                    num_iterations=run["num_iterations"],
-                    snapshot_interval=run["snapshot_interval"],
+                    num_iterations=int(config_json["num_iterations"]),
+                    snapshot_interval=int(config_json["snapshot_interval"]),
                     validation_score='IoU',
                     validation_score_minimize=False
                 )
