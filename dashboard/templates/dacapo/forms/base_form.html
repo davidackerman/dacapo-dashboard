@@ -177,8 +177,8 @@
     function dict_add_one(id, key, value) {
         let dict_div = document.getElementById(id + "_elements");
         let num_elements = dict_div.childElementCount;
-        let new_key_id = id + "_key[" + (num_elements + 1) + "]";
-        let new_value_id = id + "[" + (num_elements + 1) + "]";
+        let new_key_id = id + "_key[" + (num_elements) + "]";
+        let new_value_id = id + "[" + (num_elements) + "]";
         let key_promise = fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": key, "id_prefix": new_key_id }) }).then(response => response.json())
         let value_promise = fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": value, "id_prefix": new_value_id }) }).then(response => response.json())
         Promise.all([key_promise, value_promise]).then(data => {
