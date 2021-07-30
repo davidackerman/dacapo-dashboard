@@ -8,6 +8,7 @@ import itertools
 
 from dacapo.experiments import RunConfig
 
+
 @bp.route("/delete_configs", methods=["POST"])
 def delete_configs():
     if request.method == "POST":
@@ -84,8 +85,9 @@ def create_new_run():
         )
 
         config_store = get_stores().config
+        run_config_names = config_store.retrieve_run_config_names()
         new_runs = [
-            {   
+            {
                 "name": '_'.join([task, dataset, architecture, trainer]),
                 "task_config_name": task,
                 "dataset_config_name": dataset,
@@ -93,11 +95,10 @@ def create_new_run():
                 "trainer_config_name": trainer
             }
             for task, dataset, architecture, trainer in run_component_ids
-            if config_store.retrieve_run_config(
-                '_'.join([task, dataset, architecture, trainer]))
-            is None
+            if '_'.join([task, dataset, architecture, trainer])
+            not in run_config_names
         ]
-        print(new_runs)
+
         return jsonify(new_runs)
 
     return render_template("dacapo/new_run.html")
