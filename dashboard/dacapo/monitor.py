@@ -1,5 +1,4 @@
 from flask import render_template, request, jsonify
-from dacapo.store.converter import converter
 from dacapo.experiments import RunConfig
 
 from dashboard.stores import get_stores
@@ -42,25 +41,6 @@ def get_runs():
         ]
         return jsonify(runs)
 
-        # data = [
-        #     {
-        #         "name": run["hash"].split(":")[0],
-        #         "repetition": run["repetition"],
-        #         "trained_iterations": db.training_stats.find(
-        #             {"run": run["id"]}
-        #         ).count(),
-        #         "started": datetime.fromtimestamp(run["started"])
-        #         if run["started"] is not None
-        #         else "NA",
-        #         "task": run["task_config"],
-        #         "data": "NA",
-        #         "model": run["model_config"],
-        #         "optimizer": run["optimizer_config"],
-        #     }
-        #     for run in db.runs.find({})
-        # ]
-        # raise NotImplementedError("Return json with runs filtered by post data")
-
     return render_template("dacapo/runs.html")
 
 
@@ -75,7 +55,6 @@ def apply_config():
 @ bp.route("/start_runs", methods=["POST"])
 def start_runs():
     if request.method == "POST":
-        print(f"request {request.json}")
         config_json = request.json
         config_store = get_stores().config
         for run in config_json.pop("runs"):
