@@ -24,7 +24,7 @@
         /* serialize form data */
         let data = {};
         let form_elements = document.querySelectorAll("#new-configurable-form [name]")
-        let name, hold, splits, L, dKey;
+        let name, hold, splits, L, dict_key;
 
         let names = Array.from(form_elements).map(x => x.getAttribute("name"));
         console.log("NAMES:")
@@ -87,7 +87,7 @@
                             if (n.value === "") {
                                 sub_data[x] = null
                             } else {
-                                sub_data[x] = n.value
+                                sub_data[x] = (n.type === "checkbox") ? n.checked : n.value;
                             }
                         } else {
                             if (x in sub_data || (Number.isInteger(x) && sub_data[x] != null)) {
@@ -102,6 +102,32 @@
             }
         });
 
+        function find_and_correct_dicts(data) {
+
+            for (let key in data) {
+                if ((data[key] instanceof Object || data[key] instanceof Array ||
+                    typeof data[key] === 'object' || typeof data[key] === 'array')
+                    && data[key] !== null) {
+                    find_and_correct_dicts(data[key])
+                }
+                if (key == "dict_key") { //Then should be an array and a dict_value should be in the same level of the object
+                    find_and_correct_dicts(data["dict_value"]) //Need this here since we delete dict_value when we delete dict_key
+                    for (index in data[key]) {
+                        if (typeof data[key][index] === 'string' || data[key][index] instanceof String) {
+                            new_key = data[key][index]
+                        } else { //then should be obj with __type__ and value so concatenate key/value pairs
+                            new_key = data[key][index]["__type__"] + '::' + data[key][index]["value"]
+                        }
+                        data[new_key] = data["dict_value"][index]
+                    }
+                    delete data["dict_key"]
+                    delete data["dict_value"]
+                }
+            }
+
+        }
+        find_and_correct_dicts(data)
+        console.log(data)
         return data;
     }
     function toggle_visible(id) {
@@ -177,8 +203,8 @@
     function dict_add_one(id, key, value) {
         let dict_div = document.getElementById(id + "_elements");
         let num_elements = dict_div.childElementCount;
-        let new_key_id = id + "_key[" + (num_elements) + "]";
-        let new_value_id = id + "[" + (num_elements) + "]";
+        let new_key_id = id + ".dict_key[" + (num_elements) + "]";
+        let new_value_id = id + ".dict_value[" + (num_elements) + "]";
         let key_promise = fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": key, "id_prefix": new_key_id }) }).then(response => response.json())
         let value_promise = fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": value, "id_prefix": new_value_id }) }).then(response => response.json())
         Promise.all([key_promise, value_promise]).then(data => {
