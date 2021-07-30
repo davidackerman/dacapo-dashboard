@@ -4,11 +4,11 @@ from funlib.geometry import Coordinate
 import dacapo
 
 from .blue_print import bp
-
-import typing
-from typing import get_origin, get_args, List, Union, Tuple
+from typing import get_origin, get_args, Union
 from enum import Enum
 from pathlib import Path
+
+from . import helpers
 
 
 def get_name(cls):
@@ -20,22 +20,24 @@ def get_name(cls):
 
 @bp.route("/configurable", methods=["POST"])
 def configurable():
+
     name = request.json["name"]
     id_prefix = request.json["id_prefix"]
     loaded_value = request.json["value"] if "value" in request.json else ""
+    configurable = None
     try:
         # want to add a sub_element representing a dacapo configurable element
-        configurable = getattr(dacapo.configurables, name)
+        configurable = helpers.get_configurable(name)
         fields = parse_fields(configurable)
         html = render_template(
             "dacapo/forms/subform.html", fields=fields, id_prefix=id_prefix, value=loaded_value
         )
         return jsonify({"html": html})
-    except AttributeError:
+    except (AttributeError, attr.exceptions.NotAnAttrsClassError):
         try:
             field_type = getattr(dacapo.config_fields, name)
         except AttributeError:
-            field_type = eval(name)
+            field_type = configurable if configurable else eval(name)
         field = get_field_type(field_type, {})
         html = render_template(
             "dacapo/forms/field.html", field=field, id_prefix=id_prefix, value=loaded_value
@@ -63,7 +65,8 @@ def handle_simple_types(field_type, metadata):
     str -> text input, string
     float -> text input, (bounds, step metadata)
     """
-    simple_types = {int: "int", str: "str", float: "float", bool: "bool", Path: "path"}
+    simple_types = {int: "int", str: "str",
+                    float: "float", bool: "bool", Path: "path"}
     return {
         "type": simple_types[field_type],
         "help_text": metadata.get("help_text"),
@@ -109,7 +112,7 @@ def is_choice(field_type):
 
 
 def is_expandable(field_type):
-    return get_origin(field_type) in (list, dict, tuple)
+    return get_origin(field_type) in (list, dict, tuple, set)
 
 
 def handle_complex_types(field_type, metadata):
@@ -171,7 +174,8 @@ def handle_complex_types(field_type, metadata):
 
 
 def get_field_type(field_type, metadata):
-    simple_types = {int: "int", str: "str", float: "float", bool: "bool", Path: "path"}
+    simple_types = {int: "int", str: "str",
+                    float: "float", bool: "bool", Path: "path"}
     complex_types = {
         list: "list",
         dict: "dict",
@@ -220,6 +224,7 @@ def parse_field(field):
 
 
 def parse_fields(configurable):
-    field_data = {field.name: parse_field(field) for field in attr.fields(configurable)}
+    field_data = {field.name: parse_field(field)
+                  for field in attr.fields(configurable)}
 
     return field_data
