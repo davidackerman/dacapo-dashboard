@@ -86,6 +86,7 @@ def create_new_run():
 
         config_store = get_stores().config
         run_config_names = config_store.retrieve_run_config_names()
+        run_config_basenames = [n.split(":")[0] for n in run_config_names]
         new_runs = [
             {
                 "name": '_'.join([task, dataset, architecture, trainer]),
@@ -96,7 +97,7 @@ def create_new_run():
             }
             for task, dataset, architecture, trainer in run_component_ids
             if '_'.join([task, dataset, architecture, trainer])
-            not in run_config_names
+            not in run_config_basenames
         ]
 
         return jsonify(new_runs)
