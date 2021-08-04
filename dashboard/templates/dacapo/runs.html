@@ -7,42 +7,24 @@
 {% block extra_content %}
 {{ super() }}
 <section class="content">
-    <table id="runs-table" class="display" style="width:100%">
+    <table id="new-runs-table" class="display" style="width:100%">
         <thead>
             <tr>
                 <th>Select</th>
-                <th>Name</th>
-                <th>Run Settings</th>
-                <th>Repetition</th>
-                <th>Trained Iterations</th>
-                <th>Started</th>
                 <th>Task</th>
-                <th>Task ID</th>
                 <th>Data</th>
-                <th>Data ID</th>
                 <th>Architecture</th>
-                <th>Architecture ID</th>
                 <th>Trainer</th>
-                <th>Trainer ID</th>
             </tr>
         </thead>
         <tbody>
             {% for run in runs %}
             <tr>
                 <td></td>
-                <td>{{run.name}}</td>
-                <td>{{run}}</td>
-                <td>{{run.repetition}}</td>
-                <td>{{run.trained_iterations}}</td>
-                <td>{{run.started}}</td>
-                <td>{{run.task}}</td>
-                <td>{{run.task_id}}</td>
-                <td>{{run.data}}</td>
-                <td>{{run.data_id}}</td>
-                <td>{{run.architecture}}</td>
-                <td>{{run.architecture_id}}</td>
-                <td>{{run.trainer}}</td>
-                <td>{{run.trainer_id}}</td>
+                <td>{{run.task_config_name}}</td>
+                <td>{{run.dataset_config_name}}</td>
+                <td>{{run.architecture_config_name}}</td>
+                <td>{{run.trainer_config_name}}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -60,34 +42,11 @@
     // console.log(xhr.status)
     // xhr.onload = console.log("loaded")
     let checklists = document.getElementById("common-checklists").querySelectorAll(".checklist");
-    let table = $("#runs-table").DataTable({
-        "createdRow": function (row, data, dataIndex) {
-            $.each($('td', row), function (colIndex) {
-                if(colIndex!=0){
-                    $(this).attr('title', data[2]);
-                    $(this).attr("onclick","copyJsonData(this.title)")
-                }
-            });
-        },
+                    let table = $("#new-runs-table").DataTable({
         columnDefs: [{
             orderable: false,
             className: 'select-checkbox',
             targets: 0
-        }, {
-            "targets": [2],
-            "visible": false
-        },{
-            "targets": [7],
-            "visible": false
-        }, {
-            "targets": [9],
-            "visible": false
-        }, {
-            "targets": [11],
-            "visible": false
-        }, {
-            "targets": [13],
-            "visible": false
         }],
         select: {
             style: 'os',
@@ -95,6 +54,17 @@
         },
         order: [[1, 'asc']]
     });
+
+    //to prevent selection even if checkbox isn't there
+    table.on('select', function (e, dt, type, indexes) {
+        if (type === 'row') {
+            var rows = table.rows(indexes).nodes().to$();
+            $.each(rows, function () {
+                if ($(this).hasClass('existing_job')) table.row($(this)).deselect();
+            })
+        }
+    });
+
     let ids = { "tasks": new Set(), "datasets": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
     console.log(checklists);
     checklists.forEach(checklist => {
@@ -116,10 +86,8 @@
                 fetch("{{ url_for('dacapo.get_runs') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(array_data) }).then(response => response.json()).then(ids => {
                     let rows = [];
                     ids.forEach((run) => {
-                        rows.push([
-                        "","", JSON.stringify(run, null, 2), run.execution_details.repetitions, "", "", run.task.name, run.task.id, run.dataset.name, run.dataset.id, run.architecture.name, run.architecture.id, run.trainer.name, run.trainer.id]);
+                        rows.push(["", run.task_config_name, run.dataset_config_name, run.architecture_config_name, run.trainer_config_name]);
                     })
-                    console.log(rows)
                     table.rows.add(rows).draw();
             });
 

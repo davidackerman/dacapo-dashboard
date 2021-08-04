@@ -10,6 +10,7 @@ from datetime import datetime
 @bp.route("/results", methods=["GET", "POST"])
 def get_results():
     if request.method == "GET":
+        stats_store = get_stores().stats
         context = get_checklist_data()
         context.update(
             {

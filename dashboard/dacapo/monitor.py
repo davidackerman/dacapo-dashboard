@@ -4,7 +4,7 @@ from dacapo.experiments import RunConfig
 from dashboard.stores import get_stores
 from .blue_print import bp
 from .helpers import get_checklist_data
-import dacapo
+from dacapo import train
 
 import itertools
 
@@ -24,27 +24,26 @@ def get_runs():
         )
 
         config_store = get_stores().config
+        run_config_names = config_store.retrieve_run_config_names()
+        run_config_basenames = [n.split(":")[0] for n in run_config_names]
         runs = [
-            {"id": run["id"],
-                "execution_details": run["execution_details"],
-                "task": config_store.retrieve_task_config(task),
-                "dataset": config_store.retrieve_dataset_config(dataset),
-                "architecture": config_store.retrieve_architecture_config(
-                    architecture),
-                "trainers": config_store.retrieve_trainer_config(trainer)
-             }
-
+            {
+                "name": '_'.join([task, dataset, architecture, trainer]),
+                "task_config_name": task,
+                "dataset_config_name": dataset,
+                "architecture_config_name": architecture,
+                "trainer_config_name": trainer
+            }
             for task, dataset, architecture, trainer in run_component_ids
-            if (run := config_store.retrieve_run_config(
-                '_'.join([task, dataset, architecture, trainer])))
-            is not None
+            if '_'.join([task, dataset, architecture, trainer])
+            in run_config_basenames
         ]
         return jsonify(runs)
 
     return render_template("dacapo/runs.html")
 
 
-@ bp.route("/apply_config", methods=["GET"])
+@bp.route("/apply_config", methods=["GET"])
 def apply_config():
     if request.method == "GET":
         return render_template("dacapo/apply_config.html")
@@ -52,7 +51,7 @@ def apply_config():
     return render_template("dacapo/apply_config.html")
 
 
-@ bp.route("/start_runs", methods=["POST"])
+@bp.route("/start_runs", methods=["POST"])
 def start_runs():
     if request.method == "POST":
         config_json = request.json
@@ -77,11 +76,10 @@ def start_runs():
                     repetition=1,
                     num_iterations=int(config_json["num_iterations"]),
                     snapshot_interval=int(config_json["snapshot_interval"]),
-                    validation_score='IoU',
+                    validation_score='blipp_score',
                     validation_score_minimize=False
                 )
-
                 config_store.store_run_config(run_config)
-                dacapo.train(run_config_name)
+                train(run_config_name)
 
     return jsonify({"success": True})
