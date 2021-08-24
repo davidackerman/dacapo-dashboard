@@ -3,10 +3,23 @@ from dacapo.experiments import RunConfig
 
 from dashboard.stores import get_stores
 from .blue_print import bp
-from .helpers import get_checklist_data
+from .helpers import get_checklist_data, get_evaluator_score_names
 from dacapo import train
 
 import itertools
+
+from dacapo.plot import plot_runs
+
+
+@bp.route('/plot', methods=["POST"])
+def plot():
+    if request.method == "POST":
+        plot_info = request.json
+        return plot_runs(plot_info["runs"],
+                         validation_scores=plot_info["scoreNames"],
+                         higher_is_betters=plot_info["higherIsBetters"],
+                         plot_losses=plot_info["plotLosses"],
+                         return_json=True)
 
 
 @bp.route("/runs", methods=["GET", "POST"])
@@ -32,7 +45,8 @@ def get_runs():
                 "task_config_name": task,
                 "dataset_config_name": dataset,
                 "architecture_config_name": architecture,
-                "trainer_config_name": trainer
+                "trainer_config_name": trainer,
+                "evaluator_score_names": get_evaluator_score_names(task)
             }
             for task, dataset, architecture, trainer in run_component_ids
             if '_'.join([task, dataset, architecture, trainer])
