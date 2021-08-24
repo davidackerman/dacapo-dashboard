@@ -15,6 +15,9 @@
                 <th>Data</th>
                 <th>Architecture</th>
                 <th>Trainer</th>
+                <th>Score</th>
+                <th>Higher Score Is Better</th>
+                <th>Plot Loss</th>
             </tr>
         </thead>
         <tbody>
@@ -25,29 +28,75 @@
                 <td>{{run.dataset_config_name}}</td>
                 <td>{{run.architecture_config_name}}</td>
                 <td>{{run.trainer_config_name}}</td>
+                <td>
+                    <select name="temp" id="temp">
+                        {% for evaluator_score_name in run.evaluator_score_names %}
+                        <option value={{evaluator_score_name}}>{{evaluator_score_name}}</option> {{evaluator_score_name}}
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><input type="checkbox"
+                        id="{{run.task_config_name}}_{{run.dataset_config_name}}_{{run.architecture_config_name}}_{{run.trainer_config_name}}_higherIsBetter">
+                </td>
+                <td><input type="checkbox"
+                        id="{{run.task_config_name}}_{{run.dataset_config_name}}_{{run.architecture_config_name}}_{{run.trainer_config_name}}_plotLoss">
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    <div id="myplot"></div>
 </section>
 {% endblock %}
 
 {% block javascript %}
 <script src="{{ url_for('static', filename='table.js') }}"></script>
 <script>
-    // var xhr = new XMLHttpRequest();
-    // xhr.open("POST", "{{ url_for('dacapo.get_runs') }}", false);
-    // xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    // xhr.send("test="+encodeURIComponent("yoyoyo"));   
-    // console.log(xhr.status)
-    // xhr.onload = console.log("loaded")
     let checklists = document.getElementById("common-checklists").querySelectorAll(".checklist");
-                    let table = $("#new-runs-table").DataTable({
-        columnDefs: [{
+    let table = $("#new-runs-table").DataTable({
+        columnDefs: [
+            {
             orderable: false,
             className: 'select-checkbox',
             targets: 0
-        }],
+            },
+            {
+                render: function (data, t, row) {
+                    var $select = $("<select></select>", {
+                        "id": row[1] + "_" + row[2] + "_" + row[3] + "_" + row[4] + "_score"
+                    });
+                    $select.attr("onchange", 'plotIfRunSelected(this)')
+
+                    $.each(data, function (k, v) {
+                        var $option = $("<option></option>", {
+                            "text": v,
+                            "value": v
+                        });
+                        $select.append($option);
+                    });
+                    return $select.prop("outerHTML");
+                },
+                targets: 5
+            },
+            {
+                render: function (data, t, row) {
+                    var id = row[1] + "_" + row[2] + "_" + row[3] + "_" + row[4] + "_higherIsBetter"
+                    var $checkbox = $("<input type=checkbox id=" + id + " onchange=plotIfRunSelected(this)>");
+                    return $checkbox.prop("outerHTML");
+                },
+                targets: 6,
+                className: 'dt-body-center'
+            },
+            {
+                render: function (data, t, row) {
+                    var id = row[1] + "_" + row[2] + "_" + row[3] + "_" + row[4] + "_plotLoss"
+                    var $checkbox = $("<input type=checkbox id=" + id + " onchange=plotIfRunSelected(this)>");
+                    return $checkbox.prop("outerHTML");
+                },
+                targets: 7,
+                className: 'dt-body-center'
+            }
+        ],
         select: {
             style: 'os',
             selector: 'td:first-child'
@@ -55,7 +104,51 @@
         order: [[1, 'asc']]
     });
 
-    //to prevent selection even if checkbox isn't there
+    function plotIfRunSelected(selectedValue) {
+        var str = selectedValue.id
+        var arr = str.split("_");      // Split the string using _ as separator
+        arr.pop();       // Get last element
+        var updatedRun = arr.join("_");
+
+        // Check if updated run is selected
+        var selectedRows = table.rows({ selected: true });
+        $.map(table.rows('.selected').data(), function (item) {
+            currentSelectedRun = item[1] + "_" + item[2] + "_" + item[3] + "_" + item[4];
+            if (currentSelectedRun === updatedRun) {
+                return plotSelectedFromTable();
+            }
+        });
+    }
+
+    function plotSelectedFromTable() {
+        var selectedRows = table.rows({ selected: true });
+        plotInfo = { runs: [], scoreNames: [], higherIsBetters: [], plotLosses: [] }
+        $.map(table.rows('.selected').data(), function (item) {
+            run = item[1] + "_" + item[2] + "_" + item[3] + "_" + item[4]
+            plotInfo.runs.push(run)
+            plotInfo.scoreNames.push(document.getElementById(run + "_score").value)
+            plotInfo.higherIsBetters.push(document.getElementById(run + "_higherIsBetter").checked)
+            plotInfo.plotLosses.push(document.getElementById(run + "_plotLoss").checked)
+        });
+
+        if (plotInfo.runs.length > 0) {
+            fetch("{{ url_for('dacapo.plot') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(plotInfo) })
+                .then(function (response) { return response.json(); })
+                .then(function (item) {
+                    $("#myplot").html("");
+                    return Bokeh.embed.embed_item(item);
+                })
+        }
+        else {
+            $("#myplot").html("")
+        }
+    }
+
+    table.on('select deselect', function () {
+        plotSelectedFromTable()
+    });
+
+
     table.on('select', function (e, dt, type, indexes) {
         if (type === 'row') {
             var rows = table.rows(indexes).nodes().to$();
@@ -65,33 +158,26 @@
         }
     });
 
-    let ids = { "tasks": new Set(), "datasets": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
-    console.log(checklists);
+                                                                                                                                                                                            let ids = { "tasks": new Set(), "datasets": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
     checklists.forEach(checklist => {
         let checklist_name = checklist.childNodes[1].textContent.toLowerCase().replace(/\s+/g, '');
-        console.log(checklist_name);
-        table.clear();
         checklist.querySelectorAll("input").forEach(element => {
             element.addEventListener('change', function () {
                 table.clear();
-                console.log(element);
                 if (this.checked) {
                     ids[checklist_name].add(element.id)
                 } else {
                     ids[checklist_name].delete(element.id)
                 }
-                //console.log(checklist_name);
-                //console.log(ids[checklist_name]);
 
                 let array_data = Object.keys(ids).reduce(function (o, x) { o[x] = Array.from(ids[x]); return o; }, {});
                 fetch("{{ url_for('dacapo.get_runs') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(array_data) }).then(response => response.json()).then(ids => {
                     let rows = [];
                     ids.forEach((run) => {
-                        rows.push(["", run.task_config_name, run.dataset_config_name, run.architecture_config_name, run.trainer_config_name]);
+                        rows.push(["", run.task_config_name, run.dataset_config_name, run.architecture_config_name, run.trainer_config_name, run.evaluator_score_names, "", ""]);
                     })
                     table.rows.add(rows).draw();
-            });
-
+                });
         })
     });
 });
