@@ -68,6 +68,18 @@ def get_config_name_to_fields_dict(class_name):
     return config_name_to_fields_dict
 
 
+def get_evaluator_score_names(task_config_name):
+
+    config_store = get_stores().config
+    task_config = config_store.retrieve_task_config(task_config_name)
+    task_instance = task_config.task_type(task_config)
+    evaluator_scores = task_instance.evaluator.evaluate(
+        None, None)
+    evaluator_score_names = list(evaluator_scores.__dict__.keys())
+
+    return evaluator_score_names
+
+
 def import_submodules(package, recursive=True):
     """ Import all submodules of a module, recursively, including subpackages
 

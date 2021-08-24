@@ -73,6 +73,7 @@
         table.clear();
         checklist.querySelectorAll("input").forEach(element => {
             element.addEventListener('change', function () {
+                table.clear();
                 console.log(element);
                 if (this.checked) {
                     ids[checklist_name].add(element.id)
