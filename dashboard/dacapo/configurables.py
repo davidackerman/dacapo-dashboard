@@ -4,6 +4,7 @@ from funlib.geometry import Coordinate
 import dacapo
 
 from .blue_print import bp
+import typing
 from typing import get_origin, get_args, Union
 from enum import Enum
 from pathlib import Path
@@ -38,7 +39,17 @@ def configurable():
             field_type = getattr(dacapo.config_fields, name)
         except AttributeError:
             field_type = configurable if configurable else eval(name)
-        field = get_field_type(field_type, {})
+            if "typing.Union[" in name and get_origin(field_type) != Union:
+                # If originally was Union and still is, keep it. If it is no
+                # longer Union, it implies there was only one element, but
+                # still want it to be a dropdown
+                field = {
+                    "type": "choice",
+                    "choices": [eval(name).__name__],
+                    "help_text": {},
+                }
+            else:
+                field = get_field_type(field_type, {})
         html = render_template(
             "dacapo/forms/field.html", field=field, id_prefix=id_prefix, value=loaded_value
         )
