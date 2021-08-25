@@ -43,9 +43,10 @@ def new_task_from_existing():
             raise (e)
             return jsonify({"success": False, "error": str(e)})
 
-    fields = parse_fields(dacapo.configurables.Task)
-    task_to_copy = get_stores().tasks.find_one({})
-    print(task_to_copy)
+    config_name_to_fields_dict = get_config_name_to_fields_dict("Task")
+    print(config_name_to_fields_dict)
+    task_names = get_stores().config.retrieve_task_config_names()
+    print(task_names)
     return render_template("dacapo/forms/task_from_existing.html",
-                           fields=fields,
-                           task_to_copy=task_to_copy, id_prefix="task")
+                           fields=config_name_to_fields_dict,
+                           task_to_copy="dummy_task", id_prefix="task")
