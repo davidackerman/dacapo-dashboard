@@ -43,16 +43,12 @@ def get_config_name_to_fields_dict(class_name):
         updated_key = updated_key[:-1]+"]"
 
         for source in ["train_sources", "validate_sources", "predict_sources"]:
-            element = config_name_to_fields_dict["DatasetConfig"][
-                source]['value']
-
             config_name_to_fields_dict["DatasetConfig"][
                 source]['value'] = updated_value
 
             config_name_to_fields_dict["DatasetConfig"][
                 source]['key'] = "typing.Union[dacapo.experiments.datasets.keys.ArrayKey,  dacapo.experiments.datasets.keys.GraphKey]"
 
-        print(element)
         print(updated_value)
         print(updated_key)
     else:
@@ -104,4 +100,5 @@ def get_configurable(configurable_name):
         if hasattr(submodule, configurable_name):
             return getattr(submodule, configurable_name)
 
-    raise AttributeError(f"No module in dacapo.experiments has attribute {configurable_name}")
+    raise AttributeError(
+        f"No module in dacapo.experiments has attribute {configurable_name}")
