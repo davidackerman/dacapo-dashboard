@@ -12,7 +12,7 @@ all_names) %}
 <br><br>
 
     {% for config_name,config_fields in config_name_to_fields_dict.items() %}
-    {{ render_form(config_name, config_fields, id_prefix, value, all_names) }}
+    {{ render_form(config_name, config_fields, form_to_copy, id_prefix, value, all_names) }}
     {% endfor %}
     
     <script>
@@ -71,8 +71,8 @@ all_names) %}
 
 {% elif field_data.type == "str" and field == "name" %}
 
-<input id="user_defined_name" name="{{id_prefix}}" type="text" {% if field_data.default is not none %}
-    value="{{ field_data.default }}" {% endif %} onkeyup="check_name('{{all_names}}')">
+<input id="user_defined_name" name="{{id_prefix}}" type="text" {% if field_values_to_copy is not none %}
+    value="{{ field_values_to_copy }}" {% endif %} onkeyup="check_name('{{all_names}}')">
 <div id="invalid_name_notification">Name Already In Use!</div>
 
 {% elif field_data.type == "str" %}

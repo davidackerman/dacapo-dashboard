@@ -47,6 +47,7 @@ def new_task_from_existing():
     print(config_name_to_fields_dict)
     task = get_stores().config.retrieve_task_config("dummy_task")
     print(task.__dict__)
+    task.__dict__["name"] = "dummy_task"
     return render_template("dacapo/forms/task_from_existing.html",
                            fields=config_name_to_fields_dict,
                            task_type="DummyTaskConfig",
