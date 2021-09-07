@@ -1,24 +1,66 @@
 {% extends 'dacapo/forms/base_form.html' %}
 
-{% macro render_form_from_existing(fields, task_to_copy, id_prefix) %}
+{% macro render_form_from_existing(config_name_to_fields_dict, form_type, form_to_copy, id_prefix, value,
+all_names) %}
+<select id="test" name='{{ id_prefix }}.__type__'
+    onchange="show_corresponding_fields(this, '{{ id_prefix }}', '{{ value }}')">
+    <option value="" selected disabled hidden>Choose here</option>
+    {% for config_name,config_fields in config_name_to_fields_dict.items() %}
+    <option id='{{ config_name }}'>{{ config_name }}</option>
+    {% endfor %}
+</select>
+<br><br>
 
-{% for field, field_data in fields.items() %}
+    {% for config_name,config_fields in config_name_to_fields_dict.items() %}
+    {{ render_form(config_name, config_fields, id_prefix, value, all_names) }}
+    {% endfor %}
+    
+    <script>
+        function show_corresponding_fields(elem, id_prefix, value) {
+            var config_name = $(elem).children(":selected").attr("id");
+            var divs = document.querySelectorAll('div[class$="_configurable_field"]');
+            for (var i = 0; i < divs.length; ++i) {
+                var s = divs[i].style;
+                if (divs[i].className === config_name + "_configurable_field") {
+                    s.display = 'block';
+                }
+                else {
+                    s.display = 'none';
+                }
+            };
+        }
+    </script>
+    {% endmacro %}
+    
+    {% macro render_form(config_name, fields, form_to_copy, id_prefix, value, all_names) %}
+    <style>
+        div[class$='_configurable_field'] {
+            display: none;
+        }
+    
+        div[id='invalid_name_notification'] {
+            display: none;
+            color: red;
+        }
+    </style>
 
-<div class="configurable_field">
-    <label onclick="toggle_visible('{{ id_prefix }}_{{ field }}_input')">
-        {{ field }} {% if field_data.get("optional") %} (Optional) {% endif %}:
-    </label>
-    <span class="configurable_helptext">{{ field_data.get('help_text') }}</span>
-    <div id="{{ id_prefix }}_{{ field }}_input">
-        {{ render_field_from_existing(field, field_data, task_to_copy[field], id_prefix + "." + field) }}
-    </div>
-</div>
+        {% for field, field_data in fields.items() %}
 
-{% endfor %}
+        <div {% if config_name %} class="{{config_name}}_configurable_field" {% else %} class="configurable_field" {% endif %}>
+            <label onclick="toggle_visible('{{ id_prefix }}_{{ field }}_input')">
+                {{ field }} {% if field_data.get("optional") %} (Optional) {% endif %}:
+            </label>
+            <span class="configurable_helptext">{{ field_data.get('help_text') }}</span>
+            <div id="{{ id_prefix }}_{{ field }}_input">
+                {{ render_field_from_existing(field, field_data, form_to_copy[field], id_prefix + "." + field) }}
+            </div>
+            <br>
+        </div>
+
+        {% endfor %}
 
 {% endmacro %}
 
-{{ super() }}
 
 {% macro render_field_from_existing(field, field_data, field_values_to_copy, id_prefix) %}
 
@@ -26,6 +68,12 @@
 
 <input name="{{id_prefix}}" type="number" {% if field_values_to_copy is not none %} value="{{ field_values_to_copy }}" {%
     endif %}>
+
+{% elif field_data.type == "str" and field == "name" %}
+
+<input id="user_defined_name" name="{{id_prefix}}" type="text" {% if field_data.default is not none %}
+    value="{{ field_data.default }}" {% endif %} onkeyup="check_name('{{all_names}}')">
+<div id="invalid_name_notification">Name Already In Use!</div>
 
 {% elif field_data.type == "str" %}
 
@@ -74,11 +122,6 @@
 <div id="{{ id_prefix }}_elements">
 
 </div>
-{% if field_values_to_copy is not none %}
-    {% for field_value_to_copy in field_values_to_copy %}
-    {% endfor %}
-{% endif %}
-
 <button type="button" onclick="add_one('{{ id_prefix }}', '{{ field_data.element }}')">Add
     one</button>
 <button type="button" onclick="remove_one('{{ id_prefix }}', '{{ field_data.element }}')">Remove
@@ -108,39 +151,15 @@
 </div>
 
 {% elif field_data.type == "bool" %}
-<div class="checkbox">
+<div>
     <input name="{{id_prefix}}" type="checkbox" {% if field_data.default %} checked {% endif %}>
     <span></span>
 </div>
 {% endif %}
 <script>
-   // document.addEventListener("DOMContentLoaded", function(event) {
-    //document.onload = function(){
-    //document.onload= function() {
-     
-    //add_one('task.predictors', 'typing.Union[dacapo.tasks.predictors.affinities.Affinities, dacapo.tasks.predictors.one_hot_labels.OneHotLabels, dacapo.tasks.predictors.lsd.LSD]');
-    //if dropdown, then activate selection...and then repeat for all subdivisions
-        id = 'task.predictors';
-        element = 'typing.Union[dacapo.tasks.predictors.affinities.Affinities, dacapo.tasks.predictors.one_hot_labels.OneHotLabels, dacapo.tasks.predictors.lsd.LSD]';
-    let list_div = document.getElementById(id + "_elements");
-        let num_elements = list_div.childElementCount;
-        let new_element = document.createElement("div");
-        let new_id = id + "[" + num_elements + "]";
-        new_element.setAttribute("id", new_id);
-        new_element.setAttribute("class", "list_element");
-        fetch("{{ url_for('dacapo.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": element, "id_prefix": new_id, "value": "" }) }).then(response => response.json()).then(data => {
-            let html = data["html"];
-            new_element.innerHTML = html;
-            list_div.appendChild(new_element);
-
-        });
-        console.log(num_elements)
-
-    console.log("finished")
-  //  });
-     </script>
+                window.addEventListener('load', function () {
+                    document.getElementById("test").value = "DummyTaskConfig"
+                    document.getElementById("test").onchange()
+                })
+</script>
 {% endmacro %}
-
-
-
-

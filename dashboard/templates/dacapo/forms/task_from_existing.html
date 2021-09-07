@@ -8,7 +8,7 @@
 {% block content %}
 <form id="new-configurable-form"
     onsubmit="return submit_form('{{ url_for('dacapo.new_task') }}', '{{ url_for('dacapo.create_new_run') }}')">
-    {{ render_form_from_existing(fields, task_to_copy, id_prefix) }}
+    {{ render_form_from_existing(fields, task_type, task_to_copy, id_prefix,"",all_names) }}
     <input type="submit" value="Go">
 </form>
 {% endblock %}
