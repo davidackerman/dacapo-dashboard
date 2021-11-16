@@ -31,7 +31,7 @@ def get_runs():
         request_data = request.json
         run_component_ids = itertools.product(
             request_data["tasks"],
-            request_data["datasets"],
+            request_data["datasplits"],
             request_data["architectures"],
             request_data["trainers"],
         )
@@ -41,15 +41,15 @@ def get_runs():
         run_config_basenames = [n.split(":")[0] for n in run_config_names]
         runs = [
             {
-                "name": '_'.join([task, dataset, architecture, trainer]),
+                "name": '_'.join([task, datasplit, architecture, trainer]),
                 "task_config_name": task,
-                "dataset_config_name": dataset,
+                "datasplit_config_name": datasplit,
                 "architecture_config_name": architecture,
                 "trainer_config_name": trainer,
                 "evaluator_score_names": get_evaluator_score_names(task)
             }
-            for task, dataset, architecture, trainer in run_component_ids
-            if '_'.join([task, dataset, architecture, trainer])
+            for task, datasplit, architecture, trainer in run_component_ids
+            if '_'.join([task, datasplit, architecture, trainer])
             in run_config_basenames
         ]
         return jsonify(runs)
@@ -73,7 +73,7 @@ def start_runs():
         for run in config_json.pop("runs"):
             for i in range(int(config_json["repetitions"])):
                 run_config_name = ("_").join([run["task_config_name"],
-                                             run["dataset_config_name"],
+                                             run["datasplit_config_name"],
                                              run["architecture_config_name"],
                                              run["trainer_config_name"]])+f":{i}"
 
@@ -86,7 +86,7 @@ def start_runs():
                     trainer_config=config_store.retrieve_trainer_config(
                         run["trainer_config_name"]),
                     dataset_config=config_store.retrieve_dataset_config(
-                        run["dataset_config_name"]),
+                        run["datasplit_config_name"]),
                     repetition=1,
                     num_iterations=int(config_json["num_iterations"]),
                     snapshot_interval=int(config_json["snapshot_interval"]),

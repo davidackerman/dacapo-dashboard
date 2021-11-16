@@ -6,7 +6,7 @@ from dashboard.stores import get_stores
 from .helpers import get_config_name_to_fields_dict
 
 
-@bp.route("/new_architectures", methods=["GET", "POST"])
+@bp.route("/new_architecture", methods=["GET", "POST"])
 def new_architecture():
     if request.method == "POST":
         try:

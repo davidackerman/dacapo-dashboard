@@ -1,0 +1,14 @@
+{% extends 'dacapo/forms/base_form.html' %}
+{% from "dacapo/forms/render_macro_from_existing.html" import render_form_from_existing %}
+
+{% block header %}
+<h1>{% block title %}Create New Dataset{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<form id="new-configurable-form"
+    onsubmit="return submit_form('{{ url_for('dacapo.new_task') }}', '{{ url_for('dacapo.create_new_run') }}')">
+    {{ render_form_from_existing(fields, dataset_type, dataset_to_copy, id_prefix,"",all_names) }}
+    <input type="submit" value="Go">
+</form>
+{% endblock %}

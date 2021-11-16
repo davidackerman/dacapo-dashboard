@@ -10,7 +10,7 @@
 </form>
 {% endblock %}
 {% block dataset_checklist %}
-<form action="{{ url_for('dacapo.new_dataset') }}" class="plus-one">
+<form action="{{ url_for('dacapo.new_datasplit') }}" class="plus-one">
     <button type="submit"><i class="fa fa-plus"></i></button>
 </form>
 {% endblock %}
@@ -51,7 +51,7 @@
             <tr>
                 <td></td>
                 <td>{{run.task_config_name}}</td>
-                <td>{{run.dataset_config_name}}</td>
+                <td>{{run.datasplit_config_name}}</td>
                 <td>{{run.architecture_config_name}}</td>
                 <td>{{run.trainer_config_name}}</td>
             </tr>
@@ -148,7 +148,7 @@
                 fetch("{{ url_for('dacapo.create_new_run') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(array_data) }).then(response => response.json()).then(ids => {
                     let rows = [];
                     ids.forEach((run) => {
-                        rows.push(["", run.task_config_name, run.dataset_config_name, run.architecture_config_name, run.trainer_config_name]);
+                        rows.push(["", run.task_config_name, run.datasplit_config_name, run.architecture_config_name, run.trainer_config_name]);
                     })
                     table.rows.add(rows).draw();
                 });
@@ -175,7 +175,7 @@
         let row_data = [];
         rows.forEach((row) => {
             row_data.push({
-                "task_config_name": row[1], "dataset_config_name": row[2], "architecture_config_name": row[3], "trainer_config_name": row[4]
+                "task_config_name": row[1], "datasplit_config_name": row[2], "architecture_config_name": row[3], "trainer_config_name": row[4]
             });
         });
         return row_data

@@ -26,13 +26,13 @@ def delete_configs():
                  "id": task_doc["id"]}
             )
 
-        for dataset in request_data["datasets"]:
-            dataset_doc = db.datasets.find_one({"id": dataset})
+        for dataset in request_data["datasplits"]:
+            dataset_doc = db.datasplits.find_one({"id": dataset})
             assert dataset_doc is not None
-            db.datasets.delete_one(dataset_doc)
+            db.datasplits.delete_one(dataset_doc)
             deleted_configs.append(
                 {
-                    "config_type": "datasets",
+                    "config_type": "datasplits",
                     "name": dataset_doc["name"],
                     "id": dataset_doc["id"],
                 }
@@ -91,7 +91,7 @@ def create_new_run():
             {
                 "name": '_'.join([task, dataset, architecture, trainer]),
                 "task_config_name": task,
-                "dataset_config_name": dataset,
+                "datasplit_config_name": dataset,
                 "architecture_config_name": architecture,
                 "trainer_config_name": trainer
             }

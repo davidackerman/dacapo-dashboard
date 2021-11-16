@@ -25,7 +25,7 @@
             <tr>
                 <td></td>
                 <td>{{run.task_config_name}}</td>
-                <td>{{run.dataset_config_name}}</td>
+                <td>{{run.datasplit_config_name}}</td>
                 <td>{{run.architecture_config_name}}</td>
                 <td>{{run.trainer_config_name}}</td>
                 <td>
@@ -36,10 +36,10 @@
                     </select>
                 </td>
                 <td><input type="checkbox"
-                        id="{{run.task_config_name}}_{{run.dataset_config_name}}_{{run.architecture_config_name}}_{{run.trainer_config_name}}_higherIsBetter">
+                        id="{{run.task_config_name}}_{{run.datasplit_config_name}}_{{run.architecture_config_name}}_{{run.trainer_config_name}}_higherIsBetter">
                 </td>
                 <td><input type="checkbox"
-                        id="{{run.task_config_name}}_{{run.dataset_config_name}}_{{run.architecture_config_name}}_{{run.trainer_config_name}}_plotLoss">
+                        id="{{run.task_config_name}}_{{run.datasplit_config_name}}_{{run.architecture_config_name}}_{{run.trainer_config_name}}_plotLoss">
                 </td>
             </tr>
             {% endfor %}
@@ -174,7 +174,7 @@
                 fetch("{{ url_for('dacapo.get_runs') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(array_data) }).then(response => response.json()).then(ids => {
                     let rows = [];
                     ids.forEach((run) => {
-                        rows.push(["", run.task_config_name, run.dataset_config_name, run.architecture_config_name, run.trainer_config_name, run.evaluator_score_names, "", ""]);
+                        rows.push(["", run.task_config_name, run.datasplit_config_name, run.architecture_config_name, run.trainer_config_name, run.evaluator_score_names, "", ""]);
                     })
                     table.rows.add(rows).draw();
                 });

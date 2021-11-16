@@ -17,13 +17,13 @@
     </div>
     <div class="checklist">
         <div class="checklist_header">
-            <h3 class="checklist_name">Datasets</h3>
-            {% block dataset_checklist %}
+            <h3 class="checklist_name">Datasplits</h3>
+            {% block datasplit_checklist %}
             {% endblock %}
         </div>
         <div class="scroll_checklist">
-            {% for dataset in datasets %}
-            <input type="checkbox" id="{{dataset}}" /><span title="{{dataset}}" onclick="copyJsonData(this.title)"> {{dataset}}
+            {% for datasplit in datasplits %}
+            <input type="checkbox" id="{{datasplit}}" /><span title="{{datasplit}}" onclick="copyJsonData(this.title)"> {{dataset}}
             </span><br />
             {% endfor %}
         </div>
