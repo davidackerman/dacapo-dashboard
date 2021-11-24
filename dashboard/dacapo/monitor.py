@@ -85,7 +85,7 @@ def start_runs():
                         run["architecture_config_name"]),
                     trainer_config=config_store.retrieve_trainer_config(
                         run["trainer_config_name"]),
-                    dataset_config=config_store.retrieve_dataset_config(
+                    datasplit_config=config_store.retrieve_datasplit_config(
                         run["datasplit_config_name"]),
                     repetition=1,
                     num_iterations=int(config_json["num_iterations"]),

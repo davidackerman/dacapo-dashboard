@@ -1,15 +1,19 @@
+import importlib
+from dacapo.store.conversion_hooks import cls_fun
 from flask import request, jsonify, render_template
 import attr
 from funlib.geometry import Coordinate
 import dacapo
 
 from .blue_print import bp
-import typing
 from typing import get_origin, get_args, Union
 from enum import Enum
 from pathlib import Path
 
 from . import helpers
+import json
+import time
+import typing
 
 
 def get_name(cls):
@@ -28,30 +32,36 @@ def configurable():
     configurable = None
     try:
         # want to add a sub_element representing a dacapo configurable element
-        configurable = helpers.get_configurable(name)
-        fields = parse_fields(configurable)
+        if "render_from_choice" in name:
+            # then is a special type of configurable
+            fields = json.loads(name)
+        else:
+            configurable = helpers.get_configurable(name)
+            fields = parse_fields(configurable)
+
         html = render_template(
-            "dacapo/forms/subform.html", fields=fields, id_prefix=id_prefix, value=loaded_value
+            "dacapo/forms/subform.html", fields=fields, id_prefix=id_prefix, value=loaded_value, subid=round(time.time() * 1000)
         )
         return jsonify({"html": html})
     except (AttributeError, attr.exceptions.NotAnAttrsClassError):
-        try:
-            field_type = getattr(dacapo.config_fields, name)
-        except AttributeError:
-            field_type = configurable if configurable else eval(name)
-            if "typing.Union[" in name and get_origin(field_type) != Union:
-                # If originally was Union and still is, keep it. If it is no
-                # longer Union, it implies there was only one element, but
-                # still want it to be a dropdown
-                field = {
-                    "type": "choice",
-                    "choices": [eval(name).__name__],
-                    "help_text": {},
-                }
-            else:
-                field = get_field_type(field_type, {})
+        # try:
+        #    field_type = getattr(dacapo.config_fields, name)
+        # except AttributeError:
+
+        field_type = configurable if configurable else eval(name)
+        if "typing.Union[" in name and get_origin(field_type) != Union:
+            # If originally was Union and still is, keep it. If it is no
+            # longer Union, it implies there was only one element, but
+            # still want it to be a dropdown
+            field = {
+                "type": "choice",
+                "choices": [eval(name).__name__],
+                "help_text": {},
+            }
+        else:
+            field = get_field_type(field_type, {})
         html = render_template(
-            "dacapo/forms/field.html", field=field, id_prefix=id_prefix, value=loaded_value
+            "dacapo/forms/field.html", field=field, id_prefix=id_prefix, value=loaded_value, subid=round(time.time() * 1000)
         )
         return jsonify({"html": html})
 
@@ -225,17 +235,43 @@ def get_field_type(field_type, metadata):
     )
 
 
+def parse_subclasses(base_class_name):
+    tmp = cls_fun(base_class_name)
+    module_split = tmp.__module__.split(".")
+    parent_module = ".".join(module_split[:-2])
+    module = module_split[-2]
+
+    config_name_to_fields_dict = {}
+    for class_name in getattr(importlib.import_module(parent_module), module).__dict__.keys():
+        if class_name.endswith("Config") and cls_fun("object") not in cls_fun(class_name).__bases__:
+            config_name_to_fields_dict[class_name] = parse_fields(
+                cls_fun(class_name))
+
+    return {'type': 'render_from_choice', 'config_name_to_fields_dict': config_name_to_fields_dict}
+
+
 def parse_field(field):
     field_data = {}
     metadata = dict(**field.metadata)
     metadata["__default"] = field.default
-    field_data.update(get_field_type(field.type, metadata))
-    field_data["default"] = field.default if field.default is not attr.NOTHING else None
+
+    try:
+        field_data.update(get_field_type(field.type, metadata))
+        field_data["default"] = field.default if field.default is not attr.NOTHING else None
+        if field_data["type"] == "list":
+            if field_data["element"].endswith("Config"):
+                field_data["element"] = json.dumps(parse_subclasses(
+                    field_data["element"])).replace("'", "")
+
+    except ValueError:
+        field_class_name = field.type.__name__
+        if field_class_name.endswith("Config"):
+            field_data.update(parse_subclasses(field_class_name))
+
     return field_data
 
 
 def parse_fields(configurable):
     field_data = {field.name: parse_field(field)
                   for field in attr.fields(configurable)}
-
     return field_data

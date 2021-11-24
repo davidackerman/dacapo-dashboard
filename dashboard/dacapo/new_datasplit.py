@@ -10,18 +10,17 @@ def new_datasplit():
     if request.method == "POST":
         try:
             data = request.json
-            get_stores().config.store_dataset_config(data)
+            get_stores().config.store_datasplit_config(data)
             return jsonify({"success": True})
         except Exception as e:
             raise (e)
             return jsonify({"success": False, "error": str(e)})
 
-    config_name_to_fields_dict = get_config_name_to_fields_dict("Datasplit")
-
+    config_name_to_fields_dict = get_config_name_to_fields_dict("DataSplit")
     return render_template(
-        "dacapo/forms/dataset.html",
+        "dacapo/forms/datasplit.html",
         fields=config_name_to_fields_dict,
-        id_prefix="dataset",
+        id_prefix="datasplit",
         all_names=json.dumps(
             get_stores().config.retrieve_datasplit_config_names()))
 

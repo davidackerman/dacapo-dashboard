@@ -57,7 +57,7 @@
 <script>
     let checklists = document.getElementById("common-checklists").querySelectorAll(".checklist");
     let table = $("#runs-table").DataTable();
-    let data = { "tasks": new Set(), "datasets": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
+        let data = { "tasks": new Set(), "datasplits": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
     checklists.forEach(checklist => {
         let checklist_name = checklist.childNodes[1].textContent.toLowerCase();
         checklist.querySelectorAll("input").forEach(element => {

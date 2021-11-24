@@ -73,7 +73,7 @@ all_names) %}
 
 <input id="user_defined_name" name="{{id_prefix}}" type="text" {% if field_values_to_copy is not none %}
     value="{{ field_values_to_copy }}" {% endif %} onkeyup="check_name('{{all_names}}')">
-<div id="invalid_name_notification">Name Already In Use!</div>
+<div id="{{id_prefix}}_invalid_name_notification">Name Already In Use!</div>
 
 {% elif field_data.type == "str" %}
 

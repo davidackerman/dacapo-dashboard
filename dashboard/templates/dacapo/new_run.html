@@ -9,7 +9,7 @@
     <button type="submit"><i class="fa fa-plus"></i></button>
 </form>
 {% endblock %}
-{% block dataset_checklist %}
+{% block datasplit_checklist %}
 <form action="{{ url_for('dacapo.new_datasplit') }}" class="plus-one">
     <button type="submit"><i class="fa fa-plus"></i></button>
 </form>
@@ -41,7 +41,7 @@
             <tr>
                 <th>Select</th>
                 <th>Task</th>
-                <th>Data</th>
+                <th>Datasplit</th>
                 <th>Architecture</th>
                 <th>Trainer</th>
             </tr>
@@ -124,7 +124,7 @@
         }
     });
 
-    let ids = { "tasks": new Set(), "datasets": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
+        let ids = { "tasks": new Set(), "datasplits": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
     let elements = Array.from(checklists).reduce(function (o, x) {
         x.querySelectorAll("input").forEach(element => {
             o[element.id] = element

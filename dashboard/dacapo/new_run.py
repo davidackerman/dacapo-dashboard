@@ -26,15 +26,15 @@ def delete_configs():
                  "id": task_doc["id"]}
             )
 
-        for dataset in request_data["datasplits"]:
-            dataset_doc = db.datasplits.find_one({"id": dataset})
-            assert dataset_doc is not None
-            db.datasplits.delete_one(dataset_doc)
+        for datasplit in request_data["datasplits"]:
+            datasplit_doc = db.datasplits.find_one({"id": datasplit})
+            assert datasplit_doc is not None
+            db.datasplits.delete_one(datasplit_doc)
             deleted_configs.append(
                 {
                     "config_type": "datasplits",
-                    "name": dataset_doc["name"],
-                    "id": dataset_doc["id"],
+                    "name": datasplit_doc["name"],
+                    "id": datasplit_doc["id"],
                 }
             )
 
@@ -79,7 +79,7 @@ def create_new_run():
         request_data = request.json
         run_component_ids = itertools.product(
             request_data["tasks"],
-            request_data["datasets"],
+            request_data["datasplits"],
             request_data["architectures"],
             request_data["trainers"],
         )
@@ -89,14 +89,14 @@ def create_new_run():
         run_config_basenames = [n.split(":")[0] for n in run_config_names]
         new_runs = [
             {
-                "name": '_'.join([task, dataset, architecture, trainer]),
+                "name": '_'.join([task, datasplit, architecture, trainer]),
                 "task_config_name": task,
-                "datasplit_config_name": dataset,
+                "datasplit_config_name": datasplit,
                 "architecture_config_name": architecture,
                 "trainer_config_name": trainer
             }
-            for task, dataset, architecture, trainer in run_component_ids
-            if '_'.join([task, dataset, architecture, trainer])
+            for task, datasplit, architecture, trainer in run_component_ids
+            if '_'.join([task, datasplit, architecture, trainer])
             not in run_config_basenames
         ]
 

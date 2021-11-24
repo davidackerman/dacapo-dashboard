@@ -139,25 +139,29 @@
         }
     }
 
-    function check_name(all_names) {
-        all_names_array = JSON.parse(all_names)
-        user_defined_name = document.getElementById("user_defined_name").value
-        invalid_name_notification_div = document.getElementById("invalid_name_notification")
+    function check_name(elem, all_names) {
+        if (all_names != "[]") {
+                    all_names_array = JSON.parse(all_names)
+                    user_defined_name = elem.value
+                    elem_name = elem.name
+                    console.log(elem_name)
+                    invalid_name_notification_div = document.getElementById(elem_name + "_invalid_name_notification")
 
-        if (user_defined_name === "") {
-            invalid_name_notification_div.innerHTML = "A valid name must be entered"
-        }
-        else {
-            invalid_name_notification_div.innerHTML = "Name already in use!"
-        }
+                    if (user_defined_name === "") {
+                        invalid_name_notification_div.innerHTML = "A valid name must be entered"
+                    }
+                    else {
+                        invalid_name_notification_div.innerHTML = "Name already in use!"
+                    }
 
-        if (all_names_array.includes(user_defined_name) || user_defined_name === "") {
-            invalid_name_notification_div.style.display = "block";
-            document.getElementById("go_button").disabled = true
-        } else {
-            invalid_name_notification_div.style.display = "none";
-            document.getElementById("go_button").disabled = false
-        }
+                    if (all_names_array.includes(user_defined_name) || user_defined_name === "") {
+                        invalid_name_notification_div.style.display = "block";
+                    // document.getElementById("go_button").disabled = true
+                    } else {
+                        invalid_name_notification_div.style.display = "none";
+                        //document.getElementById("go_button").disabled = false
+                    }
+            }
 
     }
 
@@ -238,4 +242,4 @@
         }
     };
 </script>
-{% endblock %}
+{% endblock %} 

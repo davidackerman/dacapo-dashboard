@@ -23,7 +23,8 @@
         </div>
         <div class="scroll_checklist">
             {% for datasplit in datasplits %}
-            <input type="checkbox" id="{{datasplit}}" /><span title="{{datasplit}}" onclick="copyJsonData(this.title)"> {{dataset}}
+            <input type="checkbox" id="{{datasplit}}" /><span title="{{datasplit}}" onclick="copyJsonData(this.title)">
+                {{datasplit}}
             </span><br />
             {% endfor %}
         </div>
