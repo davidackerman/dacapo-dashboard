@@ -32,11 +32,8 @@
 
         form_elements.forEach(function (n) {
             if ($(n).is(':visible')) {
-
-                name = n.name;
-
+                name = n.name
                 hold = '';
-
                 let components = name.split('.');
                 components.shift();
                 let keys = [];
@@ -126,7 +123,26 @@
             }
 
         }
-        find_and_correct_dicts(data)
+        find_and_correct_dicts(data);
+
+        function replace_subid_tag(data) {
+            // replace subid tag
+            for (let key in data) {
+                if ((data[key] instanceof Object || data[key] instanceof Array ||
+                    typeof data[key] === 'object' || typeof data[key] === 'array')
+                    && data[key] !== null) {
+                    replace_subid_tag(data[key])
+                }
+                if (key.includes("subid")) {
+                    new_key = key.replace(/_subid.*./, "");
+                    data[new_key] = data[key];
+                    delete data[key];
+                }
+            }
+        }
+        
+        replace_subid_tag(data);
+        
         console.log(data)
         return data;
     }

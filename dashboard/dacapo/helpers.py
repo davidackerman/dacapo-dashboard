@@ -24,9 +24,9 @@ def get_checklist_data():
 def get_config_name_to_fields_dict(class_name):
 
     config_name_to_fields_dict = {
-        x: parse_fields(cls_fun(x)) for x in getattr(dacapo.experiments,class_name.lower()+"s").__dict__.keys() if x.endswith('Config') and cls_fun("object") not in cls_fun(x).__bases__
+        x: parse_fields(cls_fun(x)) for x in getattr(dacapo.experiments, class_name.lower()+"s").__dict__.keys() if x.endswith('Config') and cls_fun("object") not in cls_fun(x).__bases__
     }
-    print(config_name_to_fields_dict)
+
     return config_name_to_fields_dict
 
 
