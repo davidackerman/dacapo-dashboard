@@ -16,13 +16,16 @@
 
     <script>
     function call_visible_children_onchange(elem){
-        var children = elem.children
+        var children = elem.children;
         for(var i=0; i<children.length;i++){
             if(children[i].hasChildNodes()){
-                grandchildren = children[i].children
+                grandchildren = children[i].children;
                 for(var j=0; j<grandchildren.length; j++){
                     if ( $(grandchildren[j]).is("select") ){
-                        grandchildren[j].onchange()
+                        grandchildren[j].onchange();
+                    }
+                    else{
+                        call_visible_children_onchange(grandchildren[j]);
                     }
                 }
             }
@@ -38,7 +41,7 @@
             if(divs[i].id.includes(id_prefix)){
                 if (divs[i].className === config_name+"_configurable_field"){
                     s.display = 'block';
-                    arr.push(divs[i])
+                    arr.push(divs[i]);
                 }
                 else {
                     s.display = 'none';
