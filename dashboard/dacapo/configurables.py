@@ -18,6 +18,7 @@ import typing
 #TODO: Rather than hardcoding this recursion limit, should have frontend dynamically render based on selections.
 RECURSION_LIMIT = 5
 
+
 def get_name(cls):
     try:
         return cls.__name__
