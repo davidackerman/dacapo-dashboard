@@ -15,6 +15,8 @@ import json
 import time
 import typing
 
+#TODO: Rather than hardcoding this recursion limit, should have frontend dynamically render based on selections.
+RECURSION_LIMIT = 5
 
 def get_name(cls):
     try:
@@ -235,7 +237,7 @@ def get_field_type(field_type, metadata):
     )
 
 
-def parse_subclasses(base_class_name):
+def parse_subclasses(base_class_name, recursion_depth):
     tmp = cls_fun(base_class_name)
     module_split = tmp.__module__.split(".")
     parent_module = ".".join(module_split[:-2])
@@ -245,12 +247,12 @@ def parse_subclasses(base_class_name):
     for class_name in getattr(importlib.import_module(parent_module), module).__dict__.keys():
         if class_name.endswith("Config") and cls_fun("object") not in cls_fun(class_name).__bases__:
             config_name_to_fields_dict[class_name] = parse_fields(
-                cls_fun(class_name))
+                cls_fun(class_name), recursion_depth)
 
     return {'type': 'render_from_choice', 'config_name_to_fields_dict': config_name_to_fields_dict}
 
 
-def parse_field(field):
+def parse_field(field, recursion_depth):
     field_data = {}
     metadata = dict(**field.metadata)
     metadata["__default"] = field.default
@@ -261,17 +263,21 @@ def parse_field(field):
         if field_data["type"] == "list":
             if field_data["element"].endswith("Config"):
                 field_data["element"] = json.dumps(parse_subclasses(
-                    field_data["element"])).replace("'", "")
+                    field_data["element"], recursion_depth)).replace("'", "")
 
     except ValueError:
         field_class_name = field.type.__name__
         if field_class_name.endswith("Config"):
-            field_data.update(parse_subclasses(field_class_name))
+            field_data.update(parse_subclasses(
+                field_class_name, recursion_depth))
 
     return field_data
 
 
-def parse_fields(configurable):
-    field_data = {field.name: parse_field(field)
-                  for field in attr.fields(configurable)}
-    return field_data
+def parse_fields(configurable, recursion_depth=0):
+    if recursion_depth < RECURSION_LIMIT:
+        recursion_depth += 1
+        field_data = {field.name: parse_field(field, recursion_depth)
+                    for field in attr.fields(configurable)}
+        return field_data
+    return {}

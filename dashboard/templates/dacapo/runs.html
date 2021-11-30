@@ -158,7 +158,7 @@
         }
     });
 
-                                                                                                                                                                                            let ids = { "tasks": new Set(), "datasets": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
+    let ids = { "tasks": new Set(), "datasplits": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
     checklists.forEach(checklist => {
         let checklist_name = checklist.childNodes[1].textContent.toLowerCase().replace(/\s+/g, '');
         checklist.querySelectorAll("input").forEach(element => {

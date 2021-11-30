@@ -8,7 +8,8 @@ from dacapo import train
 
 import itertools
 
-from dacapo.plot import plot_runs
+#from dacapo.plot import plot_runs
+import time
 
 
 @bp.route('/plot', methods=["POST"])
@@ -87,11 +88,9 @@ def start_runs():
                         run["trainer_config_name"]),
                     datasplit_config=config_store.retrieve_datasplit_config(
                         run["datasplit_config_name"]),
-                    repetition=1,
+                    repetition=0,
                     num_iterations=int(config_json["num_iterations"]),
-                    snapshot_interval=int(config_json["snapshot_interval"]),
-                    validation_score='blipp_score',
-                    validation_score_minimize=False
+                    snapshot_interval=int(config_json["snapshot_interval"])
                 )
                 config_store.store_run_config(run_config)
                 train(run_config_name)
