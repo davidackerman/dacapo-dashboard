@@ -26,7 +26,8 @@ def get_config_name_to_fields_dict(class_name):
     config_name_to_fields_dict = {
         x: parse_fields(cls_fun(x)) for x in getattr(dacapo.experiments, class_name.lower()+"s").__dict__.keys() if x.endswith('Config') and cls_fun("object") not in cls_fun(x).__bases__
     }
-
+    #print(
+    #    config_name_to_fields_dict["TrainValidateDataSplitConfig"]["train_configs"])
     return config_name_to_fields_dict
 
 
@@ -35,9 +36,7 @@ def get_evaluator_score_names(task_config_name):
     config_store = get_stores().config
     task_config = config_store.retrieve_task_config(task_config_name)
     task_instance = task_config.task_type(task_config)
-    evaluator_scores = task_instance.evaluator.evaluate(
-        None, None)
-    evaluator_score_names = list(evaluator_scores.__dict__.keys())
+    evaluator_score_names = task_instance.evaluator.criteria
 
     return evaluator_score_names
 

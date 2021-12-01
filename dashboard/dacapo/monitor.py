@@ -8,7 +8,7 @@ from dacapo import train
 
 import itertools
 
-#from dacapo.plot import plot_runs
+from dacapo.plot import plot_runs
 import time
 
 
@@ -90,6 +90,7 @@ def start_runs():
                         run["datasplit_config_name"]),
                     repetition=0,
                     num_iterations=int(config_json["num_iterations"]),
+                    validation_interval=int(config_json["validation_interval"]),
                     snapshot_interval=int(config_json["snapshot_interval"])
                 )
                 config_store.store_run_config(run_config)

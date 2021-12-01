@@ -168,7 +168,7 @@
 {% elif field_data.type == "tuple" %}
 
 {% for arg in field_data.args %}
-{{ render_field("", arg, id_prefix + '[' + (loop.index-1)|string + ']'), render_form_from_choice_count}}
+{{ render_field("", "", arg, id_prefix + '[' + (loop.index-1)|string + ']', "","",render_form_from_choice_count) }}
 {% endfor %}
 
 {% elif field_data.type == "configurable" %}
