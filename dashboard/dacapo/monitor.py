@@ -30,28 +30,30 @@ def get_runs():
         return render_template("dacapo/runs.html", **context)
     if request.method == "POST":
         request_data = request.json
-        run_component_ids = itertools.product(
-            request_data["tasks"],
-            request_data["datasplits"],
-            request_data["architectures"],
-            request_data["trainers"],
-        )
 
         config_store = get_stores().config
         run_config_names = config_store.retrieve_run_config_names()
-        run_config_basenames = [n.split(":")[0] for n in run_config_names]
+        run_configs = [
+            config_store.retrieve_run_config(run_name) for run_name in run_config_names
+        ]
         runs = [
             {
-                "name": '_'.join([task, datasplit, architecture, trainer]),
-                "task_config_name": task,
-                "datasplit_config_name": datasplit,
-                "architecture_config_name": architecture,
-                "trainer_config_name": trainer,
-                "evaluator_score_names": get_evaluator_score_names(task)
+                "name": run_name,
+                "task_config_name": run_config.task_config.name,
+                "datasplit_config_name": run_config.datasplit_config.name,
+                "architecture_config_name": run_config.architecture_config.name,
+                "trainer_config_name": run_config.trainer_config.name,
+                "evaluator_score_names": get_evaluator_score_names(
+                    run_config.task_config.name
+                ),
             }
-            for task, datasplit, architecture, trainer in run_component_ids
-            if '_'.join([task, datasplit, architecture, trainer])
-            in run_config_basenames
+            for run_name, run_config in zip(run_config_names, run_configs)
+            if (
+                run_config.task_config.name in request_data["tasks"]
+                and run_config.datasplit_config.name in request_data["datasplits"]
+                and run_config.architecture_config.name in request_data["architectures"]
+                and run_config.trainer_config.name in request_data["trainers"]
+            )
         ]
         return jsonify(runs)
 

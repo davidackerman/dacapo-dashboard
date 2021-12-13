@@ -11,6 +11,7 @@
         <thead>
             <tr>
                 <th>Select</th>
+                <th>Run</th>
                 <th>Task</th>
                 <th>Data</th>
                 <th>Architecture</th>
@@ -24,6 +25,7 @@
             {% for run in runs %}
             <tr>
                 <td></td>
+                <td>{{run.name}}</td>
                 <td>{{run.task_config_name}}</td>
                 <td>{{run.datasplit_config_name}}</td>
                 <td>{{run.architecture_config_name}}</td>
@@ -36,10 +38,10 @@
                     </select>
                 </td>
                 <td><input type="checkbox"
-                        id="{{run.task_config_name}}_{{run.datasplit_config_name}}_{{run.architecture_config_name}}_{{run.trainer_config_name}}_higherIsBetter">
+                        id="{{run.name}}_higherIsBetter">
                 </td>
                 <td><input type="checkbox"
-                        id="{{run.task_config_name}}_{{run.datasplit_config_name}}_{{run.architecture_config_name}}_{{run.trainer_config_name}}_plotLoss">
+                        id="{{run.name}}_plotLoss">
                 </td>
             </tr>
             {% endfor %}
@@ -63,7 +65,7 @@
             {
                 render: function (data, t, row) {
                     var $select = $("<select></select>", {
-                        "id": row[1] + "_" + row[2] + "_" + row[3] + "_" + row[4] + "_score"
+                        "id": row[1] + "_score"
                     });
                     $select.attr("onchange", 'plotIfRunSelected(this)')
 
@@ -76,24 +78,24 @@
                     });
                     return $select.prop("outerHTML");
                 },
-                targets: 5
+                targets: 6
             },
             {
                 render: function (data, t, row) {
-                    var id = row[1] + "_" + row[2] + "_" + row[3] + "_" + row[4] + "_higherIsBetter"
-                    var $checkbox = $("<input type=checkbox id=" + id + " onchange=plotIfRunSelected(this)>");
-                    return $checkbox.prop("outerHTML");
-                },
-                targets: 6,
-                className: 'dt-body-center'
-            },
-            {
-                render: function (data, t, row) {
-                    var id = row[1] + "_" + row[2] + "_" + row[3] + "_" + row[4] + "_plotLoss"
+                    var id = row[1] + "_higherIsBetter"
                     var $checkbox = $("<input type=checkbox id=" + id + " onchange=plotIfRunSelected(this)>");
                     return $checkbox.prop("outerHTML");
                 },
                 targets: 7,
+                className: 'dt-body-center'
+            },
+            {
+                render: function (data, t, row) {
+                    var id = row[1] + "_plotLoss"
+                    var $checkbox = $("<input type=checkbox id=" + id + " onchange=plotIfRunSelected(this)>");
+                    return $checkbox.prop("outerHTML");
+                },
+                targets: 8,
                 className: 'dt-body-center'
             }
         ],
@@ -113,7 +115,7 @@
         // Check if updated run is selected
         var selectedRows = table.rows({ selected: true });
         $.map(table.rows('.selected').data(), function (item) {
-            currentSelectedRun = item[1] + "_" + item[2] + "_" + item[3] + "_" + item[4];
+            currentSelectedRun = item[1];
             if (currentSelectedRun === updatedRun) {
                 return plotSelectedFromTable();
             }
@@ -124,7 +126,7 @@
         var selectedRows = table.rows({ selected: true });
         plotInfo = { runs: [], scoreNames: [], higherIsBetters: [], plotLosses: [] }
         $.map(table.rows('.selected').data(), function (item) {
-            run = item[1] + "_" + item[2] + "_" + item[3] + "_" + item[4]
+            run = item[1]
             plotInfo.runs.push(run)
             plotInfo.scoreNames.push(document.getElementById(run + "_score").value)
             plotInfo.higherIsBetters.push(document.getElementById(run + "_higherIsBetter").checked)
@@ -174,7 +176,7 @@
                 fetch("{{ url_for('dacapo.get_runs') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(array_data) }).then(response => response.json()).then(ids => {
                     let rows = [];
                     ids.forEach((run) => {
-                        rows.push(["", run.task_config_name, run.datasplit_config_name, run.architecture_config_name, run.trainer_config_name, run.evaluator_score_names, "", ""]);
+                        rows.push(["", run.name, run.task_config_name, run.datasplit_config_name, run.architecture_config_name, run.trainer_config_name, run.evaluator_score_names, "", ""]);
                     })
                     table.rows.add(rows).draw();
                 });
