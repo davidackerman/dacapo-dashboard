@@ -32,7 +32,12 @@ def get_runs():
         request_data = request.json
 
         config_store = get_stores().config
-        run_config_names = config_store.retrieve_run_config_names()
+        run_config_names = config_store.retrieve_run_config_names(
+            task_names=request_data["tasks"],
+            datasplit_names=request_data["datasplits"],
+            architecture_names=request_data["architectures"],
+            trainer_names=request_data["trainers"],
+        )
         run_configs = [
             config_store.retrieve_run_config(run_name) for run_name in run_config_names
         ]
@@ -48,12 +53,6 @@ def get_runs():
                 ),
             }
             for run_name, run_config in zip(run_config_names, run_configs)
-            if (
-                run_config.task_config.name in request_data["tasks"]
-                and run_config.datasplit_config.name in request_data["datasplits"]
-                and run_config.architecture_config.name in request_data["architectures"]
-                and run_config.trainer_config.name in request_data["trainers"]
-            )
         ]
         return jsonify(runs)
 
