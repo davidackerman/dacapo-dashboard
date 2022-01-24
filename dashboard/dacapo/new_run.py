@@ -2,7 +2,7 @@ from flask import json, render_template, request, jsonify
 
 from dashboard.stores import get_stores
 from .blue_print import bp
-from .helpers import get_checklist_data
+from .helpers import get_checklist_data, datasplit_visualization_link
 
 import itertools
 
@@ -21,9 +21,7 @@ def delete_configs():
             assert task_doc is not None
             db.tasks.delete_one(task_doc)
             deleted_configs.append(
-                {"config_type": "tasks",
-                 "name": task_doc["name"],
-                 "id": task_doc["id"]}
+                {"config_type": "tasks", "name": task_doc["name"], "id": task_doc["id"]}
             )
 
         for datasplit in request_data["datasplits"]:
@@ -52,9 +50,7 @@ def delete_configs():
 
         for trainer in request_data["trainers"]:
             trainer_doc = db.trainers.find_one({"id": trainer})
-            assert (
-                trainer_doc is not None
-            ), f"Cannot find trainer with id: {trainer}"
+            assert trainer_doc is not None, f"Cannot find trainer with id: {trainer}"
             db.trainers.delete_one(trainer_doc)
             print(trainer_doc["id"], trainer)
             deleted_configs.append(
@@ -73,6 +69,12 @@ def delete_configs():
 def create_new_run():
     if request.method == "GET":
         context = get_checklist_data()
+        datasplits = context.pop("datasplits")
+        datasplits = [
+            (datasplit, datasplit_visualization_link(datasplit))
+            for datasplit in datasplits
+        ]
+        context["datasplits"] = datasplits
         return render_template("dacapo/new_run.html", **context)
 
     if request.method == "POST":
@@ -89,14 +91,14 @@ def create_new_run():
         run_config_basenames = [n.split(":")[0] for n in run_config_names]
         new_runs = [
             {
-                "name": '_'.join([task, datasplit, architecture, trainer]),
+                "name": "_".join([task, datasplit, architecture, trainer]),
                 "task_config_name": task,
                 "datasplit_config_name": datasplit,
                 "architecture_config_name": architecture,
-                "trainer_config_name": trainer
+                "trainer_config_name": trainer,
             }
             for task, datasplit, architecture, trainer in run_component_ids
-            if '_'.join([task, datasplit, architecture, trainer])
+            if "_".join([task, datasplit, architecture, trainer])
             not in run_config_basenames
         ]
 
