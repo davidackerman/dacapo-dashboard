@@ -1,7 +1,11 @@
 from flask import g
 
 from dacapo.store import (
-    create_config_store, create_stats_store, create_weights_store)
+    create_config_store,
+    create_stats_store,
+    create_weights_store,
+    create_array_store,
+)
 
 from collections import namedtuple
 
@@ -29,7 +33,10 @@ def init_app(app):
 
 
 def get_stores_as_named_tuple():
-    Stores = namedtuple('stores', ['config', 'stats', 'weights'])
-    return Stores(create_config_store(),
-                  create_stats_store(),
-                  create_weights_store())
+    Stores = namedtuple("stores", ["config", "stats", "weights", "array"])
+    return Stores(
+        create_config_store(),
+        create_stats_store(),
+        create_weights_store(),
+        create_array_store(),
+    )
