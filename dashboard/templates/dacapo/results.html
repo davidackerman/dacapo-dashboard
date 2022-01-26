@@ -25,7 +25,7 @@
             {% for run in runs %}
             <tr>
                 <td></td>
-                <td>{{run.name}}</td>
+                <td><a href="{{run.neuroglancer_link}}">{{run.name}}</a></td>
                 <td>{{run.repetition}}</td>
                 <td>{{run.trained_iterations}}</td>
                 <td>{{run.started}}</td>

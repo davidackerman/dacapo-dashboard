@@ -25,7 +25,7 @@
             {% for run in runs %}
             <tr>
                 <td></td>
-                <td>{{run.name}}</td>
+                <td><a href="{{run.neuroglancer_link}}">{{run.name}}</a></td>
                 <td>{{run.task_config_name}}</td>
                 <td>{{run.datasplit_config_name}}</td>
                 <td>{{run.architecture_config_name}}</td>
@@ -33,15 +33,14 @@
                 <td>
                     <select name="temp" id="temp">
                         {% for evaluator_score_name in run.evaluator_score_names %}
-                        <option value={{evaluator_score_name}}>{{evaluator_score_name}}</option> {{evaluator_score_name}}
+                        <option value={{evaluator_score_name}}>{{evaluator_score_name}}</option>
+                        {{evaluator_score_name}}
                         {% endfor %}
                     </select>
                 </td>
-                <td><input type="checkbox"
-                        id="{{run.name}}_higherIsBetter">
+                <td><input type="checkbox" id="{{run.name}}_higherIsBetter">
                 </td>
-                <td><input type="checkbox"
-                        id="{{run.name}}_plotLoss">
+                <td><input type="checkbox" id="{{run.name}}_plotLoss">
                 </td>
             </tr>
             {% endfor %}
@@ -58,9 +57,19 @@
     let table = $("#new-runs-table").DataTable({
         columnDefs: [
             {
-            orderable: false,
-            className: 'select-checkbox',
-            targets: 0
+                orderable: false,
+                className: 'select-checkbox',
+                targets: 0
+            },
+            {
+                render: function (data, t, row) {
+                    console.log("<a href="+row[9]+">")
+                    var $link = $("<a href='"+row[9]+"'>" + row[1] + "</a>");
+                    console.log($link.prop("outerHTML"))
+                    return $link.prop("outerHTML");
+                },
+                targets: 1,
+                className: 'dt-body-center'
             },
             {
                 render: function (data, t, row) {
@@ -87,7 +96,8 @@
                     return $checkbox.prop("outerHTML");
                 },
                 targets: 7,
-                className: 'dt-body-center'
+                className: 'dt-body-center',
+                visible: false
             },
             {
                 render: function (data, t, row) {
@@ -129,7 +139,7 @@
             run = item[1]
             plotInfo.runs.push(run)
             plotInfo.scoreNames.push(document.getElementById(run + "_score").value)
-            plotInfo.higherIsBetters.push(document.getElementById(run + "_higherIsBetter").checked)
+            // plotInfo.higherIsBetters.push(document.getElementById(run + "_higherIsBetter").checked)
             plotInfo.plotLosses.push(document.getElementById(run + "_plotLoss").checked)
         });
 
@@ -176,12 +186,12 @@
                 fetch("{{ url_for('dacapo.get_runs') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(array_data) }).then(response => response.json()).then(ids => {
                     let rows = [];
                     ids.forEach((run) => {
-                        rows.push(["", run.name, run.task_config_name, run.datasplit_config_name, run.architecture_config_name, run.trainer_config_name, run.evaluator_score_names, "", ""]);
+                        rows.push(["", run.name, run.task_config_name, run.datasplit_config_name, run.architecture_config_name, run.trainer_config_name, run.evaluator_score_names, "", "", run.neuroglancer_link]);
                     })
                     table.rows.add(rows).draw();
                 });
-        })
+            })
+        });
     });
-});
 </script>
 {% endblock %}

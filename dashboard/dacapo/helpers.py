@@ -2,12 +2,20 @@ import attr
 from dashboard.stores import get_stores
 
 import dacapo
+from dacapo.experiments import Run
 from dacapo.experiments.datasplits import DataSplit
 from dacapo.store.conversion_hooks import cls_fun
 from .configurables import parse_field, parse_fields
 
 import importlib
 import pkgutil
+
+
+def training_visualization_link(run_config):
+    array_store = get_stores().array
+    run = Run(run_config)
+    link = array_store._visualize_training(run)
+    return link
 
 
 def datasplit_visualization_link(datasplit: str):
