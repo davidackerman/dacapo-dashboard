@@ -1,3 +1,5 @@
+from flask import url_for
+
 import attr
 from dashboard.stores import get_stores
 
@@ -29,10 +31,10 @@ def get_checklist_data():
 def get_config_name_to_fields_dict(class_name):
 
     config_name_to_fields_dict = {
-        x: parse_fields(cls_fun(x)) for x in getattr(dacapo.experiments, class_name.lower()+"s").__dict__.keys() if x.endswith('Config') and cls_fun("object") not in cls_fun(x).__bases__
+        x: parse_fields(cls_fun(x))
+        for x in getattr(dacapo.experiments, class_name.lower() + "s").__dict__.keys()
+        if x.endswith("Config") and cls_fun("object") not in cls_fun(x).__bases__
     }
-    #print(
-    #    config_name_to_fields_dict["TrainValidateDataSplitConfig"]["train_configs"])
     return config_name_to_fields_dict
 
 
@@ -47,7 +49,7 @@ def get_evaluator_score_names(task_config_name):
 
 
 def import_submodules(package, recursive=True):
-    """ Import all submodules of a module, recursively, including subpackages
+    """Import all submodules of a module, recursively, including subpackages
 
     :param package: package (name or actual module)
     :type package: str | module
@@ -57,7 +59,7 @@ def import_submodules(package, recursive=True):
         package = importlib.import_module(package)
     results = {}
     for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):
-        full_name = package.__name__ + '.' + name
+        full_name = package.__name__ + "." + name
         results[full_name] = importlib.import_module(full_name)
         if recursive and is_pkg:
             results.update(import_submodules(full_name))
@@ -71,4 +73,5 @@ def get_configurable(configurable_name):
             return getattr(submodule, configurable_name)
 
     raise AttributeError(
-        f"No module in dacapo.experiments has attribute {configurable_name}")
+        f"No module in dacapo.experiments has attribute {configurable_name}"
+    )
