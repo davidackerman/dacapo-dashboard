@@ -289,9 +289,8 @@ def parse_field(field, recursion_depth):
     except ValueError as e:
         field_class_name = field.type.__name__
         if field_class_name.endswith("Config"):
-            field_data.update(parse_subclasses(
-                field_class_name, recursion_depth))
-
+            field_data.update(parse_subclasses(field_class_name, recursion_depth))
+            field_data.update({"help_text": metadata.get("help_text")})
     return field_data
 
 
