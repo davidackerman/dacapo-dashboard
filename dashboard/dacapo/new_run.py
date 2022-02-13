@@ -2,7 +2,7 @@ from flask import json, render_template, request, jsonify
 
 from dashboard.stores import get_stores
 from .blue_print import bp
-from .helpers import get_checklist_data, datasplit_visualization_link
+from .helpers import get_checklist_data
 
 import itertools
 
@@ -17,47 +17,48 @@ def delete_configs():
         deleted_configs = []
 
         for task in request_data["tasks"]:
-            task_doc = config_store.retrieve_task_config(task)
+            task_doc = config_store.tasks.find_one({"name": task})
             assert task_doc is not None
-            db.tasks.delete_one(task_doc)
+            config_store.tasks.delete_one(task_doc)
             deleted_configs.append(
-                {"config_type": "tasks", "name": task_doc["name"], "id": task_doc["id"]}
+                {
+                    "config_type": "tasks",
+                    "name": task_doc["name"],
+                }
             )
 
         for datasplit in request_data["datasplits"]:
-            datasplit_doc = db.datasplits.find_one({"id": datasplit})
+            datasplit_doc = config_store.datasplits.find_one({"name": datasplit})
             assert datasplit_doc is not None
-            db.datasplits.delete_one(datasplit_doc)
+            config_store.datasplits.delete_one(datasplit_doc)
             deleted_configs.append(
                 {
                     "config_type": "datasplits",
                     "name": datasplit_doc["name"],
-                    "id": datasplit_doc["id"],
                 }
             )
 
         for architecture in request_data["architectures"]:
-            architecture_doc = db.architectures.find_one({"id": architecture})
+            architecture_doc = config_store.architectures.find_one(
+                {"name": architecture}
+            )
             assert architecture_doc is not None
-            db.architectures.delete_one(architecture_doc)
+            config_store.architectures.delete_one(architecture_doc)
             deleted_configs.append(
                 {
                     "config_type": "architectures",
                     "name": architecture_doc["name"],
-                    "id": architecture_doc["id"],
                 }
             )
 
         for trainer in request_data["trainers"]:
-            trainer_doc = db.trainers.find_one({"id": trainer})
+            trainer_doc = config_store.trainers.find_one({"name": trainer})
             assert trainer_doc is not None, f"Cannot find trainer with id: {trainer}"
-            db.trainers.delete_one(trainer_doc)
-            print(trainer_doc["id"], trainer)
+            config_store.trainers.delete_one(trainer_doc)
             deleted_configs.append(
                 {
                     "config_type": "trainers",
                     "name": trainer_doc["name"],
-                    "id": str(trainer_doc["id"]),
                 }
             )
             print(jsonify(deleted_configs))
@@ -69,12 +70,6 @@ def delete_configs():
 def create_new_run():
     if request.method == "GET":
         context = get_checklist_data()
-        datasplits = context.pop("datasplits")
-        datasplits = [
-            (datasplit, datasplit_visualization_link(datasplit))
-            for datasplit in datasplits
-        ]
-        context["datasplits"] = datasplits
         return render_template("dacapo/new_run.html", **context)
 
     if request.method == "POST":
