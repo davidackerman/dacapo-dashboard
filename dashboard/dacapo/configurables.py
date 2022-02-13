@@ -15,7 +15,7 @@ import json
 import time
 import typing
 
-#TODO: Rather than hardcoding this recursion limit, should have frontend dynamically render based on selections.
+# TODO: Rather than hardcoding this recursion limit, should have frontend dynamically render based on selections.
 RECURSION_LIMIT = 5
 
 
@@ -43,7 +43,11 @@ def configurable():
             fields = parse_fields(configurable)
 
         html = render_template(
-            "dacapo/forms/subform.html", fields=fields, id_prefix=id_prefix, value=loaded_value, subid=round(time.time() * 1000)
+            "dacapo/forms/subform.html",
+            fields=fields,
+            id_prefix=id_prefix,
+            value=loaded_value,
+            subid=round(time.time() * 1000),
         )
         return jsonify({"html": html})
     except (AttributeError, attr.exceptions.NotAnAttrsClassError):
@@ -64,7 +68,11 @@ def configurable():
         else:
             field = get_field_type(field_type, {})
         html = render_template(
-            "dacapo/forms/field.html", field=field, id_prefix=id_prefix, value=loaded_value, subid=round(time.time() * 1000)
+            "dacapo/forms/field.html",
+            field=field,
+            id_prefix=id_prefix,
+            value=loaded_value,
+            subid=round(time.time() * 1000),
         )
         return jsonify({"html": html})
 
@@ -89,8 +97,7 @@ def handle_simple_types(field_type, metadata):
     str -> text input, string
     float -> text input, (bounds, step metadata)
     """
-    simple_types = {int: "int", str: "str",
-                    float: "float", bool: "bool", Path: "path"}
+    simple_types = {int: "int", str: "str", float: "float", bool: "bool", Path: "path"}
     return {
         "type": simple_types[field_type],
         "help_text": metadata.get("help_text"),
@@ -114,9 +121,11 @@ def handle_special_cases(field_type, metadata):
 
 
 def handle_enum(field_type, metadata):
-    return {"type": "enum",
+    return {
+        "type": "enum",
             "choices": [e.value for e in field_type],
-            "help_text": metadata.get("help_text")}
+        "help_text": metadata.get("help_text"),
+    }
 
 
 def is_optional(field_type):
@@ -198,8 +207,7 @@ def handle_complex_types(field_type, metadata):
 
 
 def get_field_type(field_type, metadata):
-    simple_types = {int: "int", str: "str",
-                    float: "float", bool: "bool", Path: "path"}
+    simple_types = {int: "int", str: "str", float: "float", bool: "bool", Path: "path"}
     complex_types = {
         list: "list",
         dict: "dict",
@@ -245,12 +253,21 @@ def parse_subclasses(base_class_name, recursion_depth):
     module = module_split[-2]
 
     config_name_to_fields_dict = {}
-    for class_name in getattr(importlib.import_module(parent_module), module).__dict__.keys():
-        if class_name.endswith("Config") and cls_fun("object") not in cls_fun(class_name).__bases__:
+    for class_name in getattr(
+        importlib.import_module(parent_module), module
+    ).__dict__.keys():
+        if (
+            class_name.endswith("Config")
+            and cls_fun("object") not in cls_fun(class_name).__bases__
+        ):
             config_name_to_fields_dict[class_name] = parse_fields(
-                cls_fun(class_name), recursion_depth)
+                cls_fun(class_name), recursion_depth
+            )
 
-    return {'type': 'render_from_choice', 'config_name_to_fields_dict': config_name_to_fields_dict}
+    return {
+        "type": "render_from_choice",
+        "config_name_to_fields_dict": config_name_to_fields_dict,
+    }
 
 
 def parse_field(field, recursion_depth):
@@ -260,13 +277,16 @@ def parse_field(field, recursion_depth):
 
     try:
         field_data.update(get_field_type(field.type, metadata))
-        field_data["default"] = field.default if field.default is not attr.NOTHING else None
+        field_data["default"] = (
+            field.default if field.default is not attr.NOTHING else None
+        )
         if field_data["type"] == "list":
             if field_data["element"].endswith("Config"):
-                field_data["element"] = json.dumps(parse_subclasses(
-                    field_data["element"], recursion_depth)).replace("'", "")
+                field_data["element"] = json.dumps(
+                    parse_subclasses(field_data["element"], recursion_depth)
+                ).replace("'", "")
 
-    except ValueError:
+    except ValueError as e:
         field_class_name = field.type.__name__
         if field_class_name.endswith("Config"):
             field_data.update(parse_subclasses(
@@ -278,7 +298,9 @@ def parse_field(field, recursion_depth):
 def parse_fields(configurable, recursion_depth=0):
     if recursion_depth < RECURSION_LIMIT:
         recursion_depth += 1
-        field_data = {field.name: parse_field(field, recursion_depth)
-                    for field in attr.fields(configurable)}
+        field_data = {
+            field.name: parse_field(field, recursion_depth)
+            for field in attr.fields(configurable)
+        }
         return field_data
     return {}
