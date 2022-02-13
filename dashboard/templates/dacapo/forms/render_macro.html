@@ -3,7 +3,7 @@
 <select name='{{ id_prefix }}.__type__' onchange="show_corresponding_fields(this, '{{ id_prefix }}')">
         <option value="" selected disabled hidden>Choose here</option>
         {% for config_name,config_fields in config_name_to_fields_dict.items() %}
-        <option id='{{ config_name }}'>{{ config_name }}</option>
+        <option id='{{ config_name }}'>{{ config_name[0:-6] }}</option>
         {% endfor %}
     </select>
     <br><br>
