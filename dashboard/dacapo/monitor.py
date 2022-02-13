@@ -1,9 +1,12 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, redirect, url_for
 from dacapo.experiments import RunConfig
 
 from dashboard.stores import get_stores
 from .blue_print import bp
-from .helpers import get_checklist_data, get_evaluator_score_names, datasplit_visualization_link, training_visualization_link
+from .helpers import (
+    get_checklist_data,
+    get_evaluator_score_names,
+)
 from dacapo import train
 
 import itertools
@@ -12,7 +15,7 @@ from dacapo.plot import plot_runs
 import time
 
 
-@bp.route('/plot', methods=["POST"])
+@bp.route("/plot", methods=["POST"])
 def plot():
     if request.method == "POST":
         plot_info = request.json
@@ -75,25 +78,33 @@ def start_runs():
         config_store = get_stores().config
         for run in config_json.pop("runs"):
             for i in range(int(config_json["repetitions"])):
-                run_config_name = ("_").join([run["task_config_name"],
+                run_config_name = ("_").join(
+                    [
+                        run["task_config_name"],
                                              run["datasplit_config_name"],
                                              run["architecture_config_name"],
-                                             run["trainer_config_name"]])+f":{i}"
+                        run["trainer_config_name"],
+                    ]
+                ) + f":{i}"
 
                 run_config = RunConfig(
                     name=run_config_name,
                     task_config=config_store.retrieve_task_config(
-                        run["task_config_name"]),
+                        run["task_config_name"]
+                    ),
                     architecture_config=config_store.retrieve_architecture_config(
-                        run["architecture_config_name"]),
+                        run["architecture_config_name"]
+                    ),
                     trainer_config=config_store.retrieve_trainer_config(
-                        run["trainer_config_name"]),
+                        run["trainer_config_name"]
+                    ),
                     datasplit_config=config_store.retrieve_datasplit_config(
-                        run["datasplit_config_name"]),
+                        run["datasplit_config_name"]
+                    ),
                     repetition=0,
                     num_iterations=int(config_json["num_iterations"]),
                     validation_interval=int(config_json["validation_interval"]),
-                    snapshot_interval=int(config_json["snapshot_interval"])
+                    snapshot_interval=int(config_json["snapshot_interval"]),
                 )
                 config_store.store_run_config(run_config)
                 train(run_config_name)
