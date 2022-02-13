@@ -27,12 +27,6 @@ def plot():
 def get_runs():
     if request.method == "GET":
         context = get_checklist_data()
-        datasplits = context.pop("datasplits")
-        datasplits = [
-            (datasplit, datasplit_visualization_link(datasplit))
-            for datasplit in datasplits[:8]
-        ]
-        context["datasplits"] = datasplits
         return render_template("dacapo/runs.html", **context)
     if request.method == "POST":
         request_data = request.json
@@ -57,7 +51,7 @@ def get_runs():
                 "evaluator_score_names": get_evaluator_score_names(
                     run_config.task_config.name
                 ),
-                "neuroglancer_link": training_visualization_link(run_config),
+                "neuroglancer_link": url_for(".visualize.training", run=run_name),
             }
             for run_name, run_config in zip(run_config_names, run_configs)
         ]
