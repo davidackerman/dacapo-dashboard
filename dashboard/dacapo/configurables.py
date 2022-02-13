@@ -123,7 +123,7 @@ def handle_special_cases(field_type, metadata):
 def handle_enum(field_type, metadata):
     return {
         "type": "enum",
-            "choices": [e.value for e in field_type],
+        "choices": [e.value for e in field_type],
         "help_text": metadata.get("help_text"),
     }
 
