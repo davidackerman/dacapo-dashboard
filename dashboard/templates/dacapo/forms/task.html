@@ -9,6 +9,6 @@
 <form id="new-configurable-form"
     onsubmit="return submit_form('{{ url_for('dacapo.new_task') }}', '{{ url_for('dacapo.create_new_run') }}')">
     {{ render_form_from_choice(fields, id_prefix, "", all_names, 0) }}
-    <input id="go_button" type="submit" value="Go" enabled>
+    <input id="go_button" type="submit" value="Save" enabled>
 </form>
 {% endblock %}
