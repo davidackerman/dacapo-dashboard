@@ -85,7 +85,7 @@ def start_runs():
                                              run["architecture_config_name"],
                         run["trainer_config_name"],
                     ]
-                ) + f":{i}"
+                ) + f"__{i}"
 
                 run_config = RunConfig(
                     name=run_config_name,
@@ -104,7 +104,6 @@ def start_runs():
                     repetition=0,
                     num_iterations=int(config_json["num_iterations"]),
                     validation_interval=int(config_json["validation_interval"]),
-                    snapshot_interval=int(config_json["snapshot_interval"]),
                 )
                 config_store.store_run_config(run_config)
                 train(run_config_name)

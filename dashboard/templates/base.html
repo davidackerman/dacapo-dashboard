@@ -7,10 +7,8 @@
   <h1>DaCapo</h1>
   <div>
     <ul>
-        <li><a href="{{ url_for('dacapo.get_results') }}">Query Results</a>
         <li><a href="{{ url_for('dacapo.get_runs') }}">Monitor Runs</a>
         <li><a href="{{ url_for('dacapo.create_new_run') }}">Create New Run</a>
-        <li><a href="{{ url_for('dacapo.apply_config') }}">Apply Config</a>
     </ul>
     <ul class="users">
         {% if g.user %}
