@@ -6,4 +6,4 @@ zarr
 click
 flask
 attr
-git+https://github.com/pattonw/dacapo
+git+https://github.com/funkelab/dacapo
