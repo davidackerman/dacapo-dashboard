@@ -14,7 +14,7 @@ def new_architecture():
             get_stores().config.store_architecture_config(data)
             return jsonify({"success": True})
         except Exception as e:
-            raise(e)
+            raise (e)
             return jsonify({"success": False, "error": str(e)})
 
     config_name_to_fields_dict = get_config_name_to_fields_dict("Architecture")
@@ -22,5 +22,5 @@ def new_architecture():
         "dacapo/forms/architecture.html",
         fields=config_name_to_fields_dict,
         id_prefix="architecture",
-        all_names=json.dumps(
-            get_stores().config.retrieve_architecture_config_names()))
+        all_names=json.dumps(get_stores().config.retrieve_architecture_config_names()),
+    )

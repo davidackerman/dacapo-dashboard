@@ -25,8 +25,8 @@ def new_task():
         "dacapo/forms/task.html",
         fields=config_name_to_fields_dict,
         id_prefix="task",
-        all_names=json.dumps(
-            get_stores().config.retrieve_task_config_names()))
+        all_names=json.dumps(get_stores().config.retrieve_task_config_names()),
+    )
 
 
 @bp.route("/new_task_from_existing", methods=["GET", "POST"])
@@ -48,10 +48,11 @@ def new_task_from_existing():
     task = get_stores().config.retrieve_task_config("dummy_task")
     print(task.__dict__)
     task.__dict__["name"] = "dummy_task"
-    return render_template("dacapo/forms/task_from_existing.html",
-                           fields=config_name_to_fields_dict,
-                           task_type="DummyTaskConfig",
-                           task_to_copy=task.__dict__,
-                           id_prefix="task",
-                           all_names=json.dumps(
-                               get_stores().config.retrieve_task_config_names()))
+    return render_template(
+        "dacapo/forms/task_from_existing.html",
+        fields=config_name_to_fields_dict,
+        task_type="DummyTaskConfig",
+        task_to_copy=task.__dict__,
+        id_prefix="task",
+        all_names=json.dumps(get_stores().config.retrieve_task_config_names()),
+    )

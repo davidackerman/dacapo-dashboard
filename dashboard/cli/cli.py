@@ -36,7 +36,7 @@ def dashboard():
 
 @cli.command()
 def init_db():
-    #TODO: Remove deprecated create_app?
+    # TODO: Remove deprecated create_app?
     from dashboard import create_app
     from dashboard.stores import init_db
 

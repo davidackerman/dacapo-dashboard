@@ -13,7 +13,7 @@ def new_trainer():
             get_stores().config.store_trainer_config(data)
             return jsonify({"success": True})
         except Exception as e:
-            raise(e)
+            raise (e)
             return jsonify({"success": False, "error": str(e)})
 
     config_name_to_fields_dict = get_config_name_to_fields_dict("Trainer")
@@ -21,5 +21,5 @@ def new_trainer():
         "dacapo/forms/trainer.html",
         fields=config_name_to_fields_dict,
         id_prefix="trainer",
-        all_names=json.dumps(
-            get_stores().config.retrieve_trainer_config_names()))
+        all_names=json.dumps(get_stores().config.retrieve_trainer_config_names()),
+    )

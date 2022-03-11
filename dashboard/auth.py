@@ -18,7 +18,7 @@ from bson.objectid import ObjectId
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
-#TODO: Where to put users now
+# TODO: Where to put users now
 @bp.route("/register", methods=("GET", "POST"))
 def register():
     if request.method == "POST":
@@ -76,9 +76,7 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        g.user = (
-            get_stores().users.find_one({"_id": ObjectId(user_id)})
-        )
+        g.user = get_stores().users.find_one({"_id": ObjectId(user_id)})
 
 
 @bp.route("/logout")

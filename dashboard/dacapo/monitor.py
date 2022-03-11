@@ -19,11 +19,13 @@ import time
 def plot():
     if request.method == "POST":
         plot_info = request.json
-        return plot_runs(plot_info["runs"],
-                         validation_scores=plot_info["scoreNames"],
-                         higher_is_betters=plot_info["higherIsBetters"],
-                         plot_losses=plot_info["plotLosses"],
-                         return_json=True)
+        return plot_runs(
+            plot_info["runs"],
+            validation_scores=plot_info["scoreNames"],
+            higher_is_betters=plot_info["higherIsBetters"],
+            plot_losses=plot_info["plotLosses"],
+            return_json=True,
+        )
 
 
 @bp.route("/runs", methods=["GET", "POST"])
@@ -81,8 +83,8 @@ def start_runs():
                 run_config_name = ("_").join(
                     [
                         run["task_config_name"],
-                                             run["datasplit_config_name"],
-                                             run["architecture_config_name"],
+                        run["datasplit_config_name"],
+                        run["architecture_config_name"],
                         run["trainer_config_name"],
                     ]
                 ) + f"__{i}"
