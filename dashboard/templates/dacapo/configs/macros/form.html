@@ -1,0 +1,20 @@
+{% from "dacapo/configs/macros/field.html" import render_field %}
+
+{% macro render_form(config_name, fields, id_prefix, all_names) %}
+
+{% for field, field_data in fields.items() %}
+
+<div class="configurable_field" id="{{ id_prefix + '_' + field }}">
+    <label onclick="toggle_visible('{{ id_prefix }}_{{ field }}_input')">
+        {{ field }} {% if field_data.get("optional") %} (Optional) {% endif %}:
+    </label>
+    <span class="configurable_helptext">{{ field_data.get('help_text') }}</span>
+    <div id="{{ id_prefix }}_{{ field }}_input">
+        {{ render_field(field, field_data, id_prefix + "." + field, all_names) }}
+    </div>
+    <br>
+</div>
+
+{% endfor %}
+
+{% endmacro %}

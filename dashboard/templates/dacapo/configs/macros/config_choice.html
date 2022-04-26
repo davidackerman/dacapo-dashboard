@@ -1,0 +1,22 @@
+{% macro render_config_choice(options, id_prefix, all_names)
+%}
+<select name='{{ id_prefix }}.__type__' id='{{ id_prefix }}.__type__' onchange="show_corresponding_fields(this, '{{ id_prefix }}')">
+    <option value="" selected disabled hidden>Choose here</option>
+    {% for config_name,config_fields in options.items() %}
+    {% if config_name[:5] != "Dummy" %}
+    <option id='{{ id_prefix + "_" + config_name }}' value="{{ config_name }}">{{ config_name[0:-6] }}</option>
+    {% endif %}
+    {% endfor %}
+</select>
+<br></br>
+
+<div id="{{ id_prefix + '_options' }}">
+    {% for config_name,config_fields in options.items() %}
+    <div class="configurable_field config_element" id="{{ id_prefix + '.' + config_name }}" data-loaded="false"
+        onfocusout="config_losing_focus(this, event, '{{ url_for('dacapo.configs.verify', config_type=config_name) }}')"
+        tabindex="0">
+    </div>
+    <div id="{{ id_prefix + '.' + config_name }}_invalid_config_notification"></div>
+    {% endfor %}
+</div>
+{% endmacro %}
