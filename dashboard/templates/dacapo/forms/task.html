@@ -7,7 +7,7 @@
 
 {% block content %}
 <form id="new-configurable-form"
-    onsubmit="return submit_form('{{ url_for('dacapo.new_task') }}', '{{ url_for('dacapo.create_new_run') }}')">
+    onsubmit="return submit_form('{{ url_for('dacapo.new_task') }}', '{{ url_for('dacapo.create_new_run') }}', 'new-configurable-form')">
     {{ render_config_choice(fields, id_prefix, all_names) }}
     <input id="go_button" type="submit" value="Save" enabled>
 </form>
