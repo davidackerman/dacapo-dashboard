@@ -5,5 +5,7 @@ tqdm
 zarr
 click
 flask
+flask_wtf
+wtforms
 attr
 git+https://github.com/funkelab/dacapo
