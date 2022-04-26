@@ -1,5 +1,5 @@
-{% extends 'dacapo/forms/base_form.html' %}
-{% from "dacapo/forms/render_macro.html" import render_form_from_choice %}
+{% extends 'dacapo/configs/base_form.html' %}
+{% from "dacapo/configs/macros/config_choice.html" import render_config_choice %}
 
 {% block header %}
 <h1>{% block title %}Create New Task{% endblock %}</h1>
@@ -8,7 +8,7 @@
 {% block content %}
 <form id="new-configurable-form"
     onsubmit="return submit_form('{{ url_for('dacapo.new_task') }}', '{{ url_for('dacapo.create_new_run') }}')">
-    {{ render_form_from_choice(fields, id_prefix, "", all_names, 0) }}
+    {{ render_config_choice(fields, id_prefix, all_names) }}
     <input id="go_button" type="submit" value="Save" enabled>
 </form>
 {% endblock %}
