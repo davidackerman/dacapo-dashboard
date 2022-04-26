@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask, render_template
+from flask_login.utils import login_required
 
 
 def create_app(test_config=None):
@@ -24,8 +25,12 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    from .authservice import create_login_manager
+    create_login_manager(app)
+
     # a simple page that says hello
     @app.route("/hello")
+    @login_required
     def hello():
         return "Hello, World!"
 

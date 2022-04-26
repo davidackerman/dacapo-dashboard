@@ -8,6 +8,7 @@ from flask_login import login_user, UserMixin, LoginManager, logout_user
 def create_login_manager(app):
     login_manager = LoginManager()
     login_manager.init_app(app)
+    login_manager.login_view = 'auth.login_form'
 
     @login_manager.user_loader
     def token_validator(user_token):
@@ -59,14 +60,14 @@ class AuthenticationService(object):
         authResponse = requests.post(self._auth_url,
                                      headers=headers,
                                      data=json.dumps({'username': username, 'password': password}))
+        if authResponse.status_code != 200:
+            return False
+
         auth = authResponse.json()
         u = self._create_user(token=auth['token'], username=auth['user_name'])
         expiration_time = u.get_expiration() - datetime.now()
         login_user(u, duration=expiration_time)
-        if authResponse.status_code != 200:
-            return False
-        else:
-            return True
+        return True
 
     def validate_user_token(self, token):
         try:
