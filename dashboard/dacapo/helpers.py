@@ -17,13 +17,22 @@ def get_checklist_data():
 
     config_store = get_stores().config
     context = {
-        "tasks": config_store.retrieve_task_config_names(),
+        "tasks": [
+            (task, url_for("dacapo.load_task", name=task))
+            for task in config_store.retrieve_task_config_names()
+        ],
         "datasplits": [
-            (datasplit, url_for("dacapo.visualize.datasplit", datasplit=datasplit))
+            (datasplit, url_for("dacapo.load_datasplit", name=datasplit))
             for datasplit in config_store.retrieve_datasplit_config_names()
         ],
-        "architectures": config_store.retrieve_architecture_config_names(),
-        "trainers": config_store.retrieve_trainer_config_names(),
+        "architectures": [
+            (architecture, url_for("dacapo.load_architecture", name=architecture))
+            for architecture in config_store.retrieve_architecture_config_names()
+        ],
+        "trainers": [
+            (trainer, url_for("dacapo.load_trainer", name=trainer))
+            for trainer in config_store.retrieve_trainer_config_names()
+        ],
     }
     return context
 
