@@ -28,14 +28,14 @@ def get_checklist_data():
     return context
 
 
-def get_config_name_to_fields_dict(class_name):
+def get_config_names(class_name):
 
-    config_name_to_fields_dict = {
-        x: parse_fields(cls_fun(x))
+    config_names = [
+        x
         for x in getattr(dacapo.experiments, class_name.lower() + "s").__dict__.keys()
         if x.endswith("Config") and cls_fun("object") not in cls_fun(x).__bases__
-    }
-    return config_name_to_fields_dict
+    ]
+    return config_names
 
 
 def get_evaluator_score_names(task_config_name):
