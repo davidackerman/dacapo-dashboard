@@ -121,13 +121,13 @@
                         }
                     } else if (Array.isArray(sub_object)) {
                         for (let i = 0; i < sub_object.length; i++) {
-                            if (document.getElementById(this_key) === null) {
+                            if (document.getElementById(this_key + `[${i}]`) === null && document.getElementById(this_key + "_sample") !== null) {
                                 add_one(this_key);
                             }
                         }
                     };
                     current_objects.push([this_key + ".", sub_object]);
-                } else {
+                } else if (sub_object !== null) {
                     final_values.push([this_key, sub_object]);
                 }
             };
