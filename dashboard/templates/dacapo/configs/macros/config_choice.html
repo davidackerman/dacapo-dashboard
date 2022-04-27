@@ -1,6 +1,7 @@
 {% macro render_config_choice(options, id_prefix, all_names)
 %}
-<select name='{{ id_prefix }}.__type__' id='{{ id_prefix }}.__type__' onchange="show_corresponding_fields(this, '{{ id_prefix }}')">
+<select name='{{ id_prefix }}.__type__' id='{{ id_prefix }}.__type__'
+    onchange="show_corresponding_fields(this, '{{ id_prefix }}')">
     <option value="" selected disabled hidden>Choose here</option>
     {% for config_name,config_fields in options.items() %}
     {% if config_name[:5] != "Dummy" %}
@@ -16,7 +17,6 @@
         onfocusout="config_losing_focus(this, event, '{{ url_for('dacapo.configs.verify', config_type=config_name) }}')"
         tabindex="0">
     </div>
-    <div id="{{ id_prefix + '.' + config_name }}_invalid_config_notification"></div>
     {% endfor %}
 </div>
 {% endmacro %}
