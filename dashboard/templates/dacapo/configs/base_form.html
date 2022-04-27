@@ -78,10 +78,8 @@
     async function setSubFormData(element, form_data) {
 
         let id_prefix = element.id;
-        let prefix_components = id_prefix.split(".");
-        let config_type = prefix_components[prefix_components.length - 1];
 
-        let current_objects = [["", form_data]];
+        let current_objects = [["", { [id_prefix]: form_data }]];
 
         let final_values = [];
 
@@ -109,9 +107,9 @@
                     if (sub_object.hasOwnProperty("__type__")) {
                         if (sub_object.__type__ !== null) {
                             this_key = this_key + "." + sub_object.__type__;
-                            let sub_div = document.getElementById(id_prefix + "." + this_key);
+                            let sub_div = document.getElementById(this_key);
                             if (sub_div.getAttribute("data-loaded") == "false") {
-                                await fetch(`/dacapo/configs/configurable/${sub_object.__type__}/${id_prefix}.${this_key}`, {
+                                await fetch(`/dacapo/configs/configurable/${sub_object.__type__}/${this_key}`, {
                                     method: "GET",
                                 }).then(response => response.json()).then(data => {
                                     let html = data["html"];
@@ -123,14 +121,14 @@
                         }
                     } else if (Array.isArray(sub_object)) {
                         for (let i = 0; i < sub_object.length; i++) {
-                            if (document.getElementById(id_prefix + "." + this_key) === null) {
-                                add_one(id_prefix + "." + this_key);
+                            if (document.getElementById(this_key) === null) {
+                                add_one(this_key);
                             }
                         }
                     };
                     current_objects.push([this_key + ".", sub_object]);
                 } else {
-                    final_values.push([id_prefix + "." + this_key, sub_object]);
+                    final_values.push([this_key, sub_object]);
                 }
             };
         };
@@ -426,5 +424,15 @@
             call_visible_children_onchange(arr[i]);
         }
     }
+
+    {% if value is defined %}
+    async function setValue(json_string) {
+        let form_element = document.getElementById("{{ id_prefix }}");
+        let form_data = JSON.parse(json_string);
+        await setSubFormData(form_element, form_data);
+    }
+    // setValue(decodeURIComponent('{{ value }}'));
+    setValue(he.decode('{{ value }}'));
+    {% endif %}
 </script>
 {% endblock %}
