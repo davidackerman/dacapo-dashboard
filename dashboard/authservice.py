@@ -51,7 +51,7 @@ class AuthenticationService(object):
     def __init__(self, auth_url):
         self._auth_url = auth_url
 
-    def authenticate(self, user_credentials):
+    def authenticate_user(self, user_credentials):
         username = user_credentials.get('username')
         password = user_credentials.get('password')
         # validate the credentials
@@ -60,9 +60,12 @@ class AuthenticationService(object):
         authResponse = requests.post(self._auth_url,
                                      headers=headers,
                                      data=json.dumps({'username': username, 'password': password}))
+        return authResponse
+
+    def login(self, user_credentials):
+        authResponse = self.authenticate_user(user_credentials)
         if authResponse.status_code != 200:
             return False
-
         auth = authResponse.json()
         u = self._create_user(token=auth['token'], username=auth['user_name'])
         expiration_time = u.get_expiration() - datetime.now()
