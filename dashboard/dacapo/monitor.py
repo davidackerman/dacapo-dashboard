@@ -1,5 +1,7 @@
-from flask import render_template, request, jsonify, redirect, url_for
+from flask import render_template, request, jsonify, g, redirect, url_for
 from dacapo.experiments import RunConfig
+from flask_login.utils import login_required
+from dashboard.nextflow import Nextflow
 
 from dashboard.stores import get_stores
 from .blue_print import bp
@@ -29,6 +31,7 @@ def plot():
 
 
 @bp.route("/runs", methods=["GET", "POST"])
+@login_required
 def get_runs():
     if request.method == "GET":
         context = get_checklist_data()
@@ -108,6 +111,13 @@ def start_runs():
                     validation_interval=int(config_json["validation_interval"]),
                 )
                 config_store.store_run_config(run_config)
-                train(run_config_name)
+                nextflow = Nextflow(g.user_info)
+                params_text = {
+                    "run_name": run_config_name,
+                    "cpus": 5,
+                }
+                nextflow.launch_workflow(params_text, config_json["chargegroup"])
+
+                # train(run_config_name)
 
     return jsonify({"success": True})
