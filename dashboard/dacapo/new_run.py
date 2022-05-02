@@ -1,5 +1,6 @@
 import subprocess
 from flask import json, render_template, g, request, jsonify
+from flask_login.utils import login_required
 
 from dashboard.stores import get_stores
 from .blue_print import bp
@@ -56,6 +57,7 @@ def delete_configs():
 
 
 @bp.route("/new_run", methods=["GET", "POST"])
+@login_required
 def create_new_run():
     chargegroup = subprocess.getoutput(f'lsfgroup {g.user_info["name"]}')
     if request.method == "GET":
