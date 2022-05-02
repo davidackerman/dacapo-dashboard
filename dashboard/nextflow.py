@@ -1,7 +1,8 @@
 import requests
 import json
-import os
+import subprocess
 from os.path import expanduser
+from flask import flash
 
 
 class Nextflow:
@@ -35,11 +36,7 @@ class Nextflow:
         if ssh_key:
             # Then this is a first time setup, so need to validate
             if self.is_valid_token():
-                if self.set_login_node_credentials().status_code == 200:
-                    if self.set_compute_environment().status_code != 200:
-                        self.verified = False
-                        self.error_message = "Valid API tokena nd SSH Key, but failed to setup compute environment"
-                else:
+                if self.set_login_node_credentials().status_code != 200:
                     self.verified = False
                     self.error_message = "Invalid SSH Key"
             else:
@@ -77,12 +74,12 @@ class Nextflow:
 
         return credential_id
 
-    def set_compute_environment(self):
+    def set_compute_environment(self, chargegroup):
         workdir = expanduser(f"~{self.username}/") + ".dacapo/nextflow"
-        chargegroup = os.system(f"lsfgroup {self.username}")
+
         compute_env = {
             "computeEnv": {
-                "name": "dacapo_env",
+                "name": f"dacapo_{chargegroup}",
                 "platform": "lsf-platform",
                 "config": {
                     "userName": self.username,
@@ -91,35 +88,61 @@ class Nextflow:
                     "hostName": self.host_name,
                     "headQueue": self.head_queue,
                     "computeQueue": self.compute_queue,
-                    "headJobOptions": chargegroup,
+                    "headJobOptions": f"-P {chargegroup}",
                 },
                 "credentialsId": self.get_login_node_credentials(),
             }
         }
+
+        flash(
+            f"Setting up first time compute environment for chargegroup {chargegroup}",
+            "info",
+        )
         res = requests.post(
             url=f"{self.nextflow_api}/compute-envs",
             data=json.dumps(compute_env),
             headers=self.headers,
         )
+        if res.status_code != 200:
+            flash(
+                f"Failed setting up first time compute environment for chargegroup {chargegroup}",
+                "error",
+            )
+        else:
+            flash(
+                f"Set up first time compute environment for chargegroup {chargegroup}",
+                "success",
+            )
+
         return res
 
-    def get_compute_environment(self):
+    def get_or_set_compute_environment(self, chargegroup):
         res = requests.get(
             url=f"{self.nextflow_api}/compute-envs", headers=self.headers
         )
 
         compute_env_id = None
         for compute_env in res.json()["computeEnvs"]:
-            if compute_env["name"] == "dacapo_env":
+            if compute_env["name"] == f"dacapo_{chargegroup}":
                 compute_env_id = compute_env["id"]
 
+        if not compute_env_id:
+            res = self.set_compute_environment(chargegroup)
+            if res.status_code == 200:
+                compute_env_id = res.json()["computeEnvId"]
         return compute_env_id
 
-    def launch_workflow(self, params_text):
+    def launch_workflow(self, params_text, chargegroup):
+        if not chargegroup:
+            chargegroup = subprocess.getoutput(f"lsfgroup {self.username}")
+
+        params_text["lsf_opts"] = f"-P {chargegroup}"
+        compute_env_id = self.get_or_set_compute_environment(chargegroup)
+
         workdir = expanduser(f"~{self.username}/") + ".dacapo/nextflow"
         workflow = {
             "launch": {
-                "computeEnvId": self.get_compute_environment(),
+                "computeEnvId": compute_env_id,
                 "pipeline": self.pipeline_repo,
                 "workDir": workdir,
                 "revision": self.revision,
@@ -130,19 +153,21 @@ class Nextflow:
             }
         }
 
+        flash(f'Submitting run {params_text["run_name"]}')
         res = requests.post(
             url=f"{self.nextflow_api}/workflow/launch",
             data=json.dumps(workflow),
             headers=self.headers,
         )
 
-        workflow_id = res.json()["workflowId"]
-        res = requests.get(
-            url=f"{self.nextflow_api}/workflow/{workflow_id}",
-            data=json.dumps(workflow),
-            headers=headers,
-        )
-
-        print(
-            f'Monitor run at https://{config.hostname}/user/{res.json()["workflow"]["userName"]}/watch/{workflow_id}.'
-        )
+        if res.status_code == 200:
+            workflow_id = res.json()["workflowId"]
+            res = requests.get(
+                url=f"{self.nextflow_api}/workflow/{workflow_id}", headers=self.headers
+            )
+            user_name = res.json()["workflow"]["userName"]
+            flash(
+                f'Submitted run {params_text["run_name"]}, monitor at https://{self.host_name}/user/{user_name}/watch/{workflow_id}.'
+            )
+        else:
+            flash(f'Failed to submit run {params_text["run_name"]}')
