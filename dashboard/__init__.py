@@ -25,6 +25,7 @@ def create_app(test_config=None):
         pass
 
     from .authservice import create_login_manager
+
     create_login_manager(app)
 
     # a simple page that says hello
