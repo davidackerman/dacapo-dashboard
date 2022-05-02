@@ -92,6 +92,7 @@ def register():
             config_store = get_stores().config
             config_store.store_user_info(user_info)
             auth_service.login(user_credentials)
+            session["user_info"] = user_info
             # setup_compute_environment...
             return redirect(next_page)
         else:
@@ -145,6 +146,7 @@ def login():
         user_info = config_store.retrieve_user_info(user_credentials["username"])
         if user_info:
             logged_in = auth_service.login(user_credentials)
+            session["user_info"] = user_info
             if logged_in:
                 return redirect(next_page)
         else:
@@ -163,26 +165,13 @@ def login():
 
 @bp.before_app_request
 def load_logged_in_user():
-    user_id = session.get("user_id")
-
-    if user_id is None:
-        g.user = None
-    else:
-        g.user = get_stores().users.find_one({"_id": ObjectId(user_id)})
+    if hasattr(flask_login.current_user, "username"):
+        config_store = get_stores().config
+        user_info = config_store.retrieve_user_info(flask_login.current_user.username)
+        g.user_info = user_info
 
 
 @bp.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("main"))
-
-
-# def login_required(view):
-#     @functools.wraps(view)
-#     def wrapped_view(**kwargs):
-#         if g.user is None:
-#             return redirect(url_for("auth.login"))
-
-#         return view(**kwargs)
-
-#     return wrapped_view
