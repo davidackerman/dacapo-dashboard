@@ -17,25 +17,34 @@ def get_checklist_data():
 
     config_store = get_stores().config
     context = {
-        "tasks": config_store.retrieve_task_config_names(),
+        "tasks": [
+            (task, url_for("dacapo.load_task", name=task))
+            for task in config_store.retrieve_task_config_names()
+        ],
         "datasplits": [
-            (datasplit, url_for("dacapo.visualize.datasplit", datasplit=datasplit))
+            (datasplit, url_for("dacapo.load_datasplit", name=datasplit))
             for datasplit in config_store.retrieve_datasplit_config_names()
         ],
-        "architectures": config_store.retrieve_architecture_config_names(),
-        "trainers": config_store.retrieve_trainer_config_names(),
+        "architectures": [
+            (architecture, url_for("dacapo.load_architecture", name=architecture))
+            for architecture in config_store.retrieve_architecture_config_names()
+        ],
+        "trainers": [
+            (trainer, url_for("dacapo.load_trainer", name=trainer))
+            for trainer in config_store.retrieve_trainer_config_names()
+        ],
     }
     return context
 
 
-def get_config_name_to_fields_dict(class_name):
+def get_config_names(class_name):
 
-    config_name_to_fields_dict = {
-        x: parse_fields(cls_fun(x))
+    config_names = [
+        x
         for x in getattr(dacapo.experiments, class_name.lower() + "s").__dict__.keys()
         if x.endswith("Config") and cls_fun("object") not in cls_fun(x).__bases__
-    }
-    return config_name_to_fields_dict
+    ]
+    return config_names
 
 
 def get_evaluator_score_names(task_config_name):

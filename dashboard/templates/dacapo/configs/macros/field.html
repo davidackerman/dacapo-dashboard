@@ -1,0 +1,102 @@
+{% from "dacapo/configs/macros/config_choice.html" import render_config_choice %}
+
+{% macro render_field(field, field_data, id_prefix, all_names) %}
+
+{% if field_data.type == "int" %}
+
+<input name="{{id_prefix}}" id="{{id_prefix}}" type="number" {% if field_data.default is not none %}
+    value="{{ field_data.default }}" {% endif %}>
+
+{% elif field_data.type == "str" and field == "name" %}
+
+<input name="{{id_prefix}}" id="{{id_prefix}}" type="text" {% if field_data.default is not none %}
+    value="{{ field_data.default }}" {% endif %} onkeyup='check_name(this, "{{ all_names }}")'>
+<div id="{{id_prefix}}_invalid_name_notification">Name Already In Use!</div>
+
+{% elif field_data.type == "str" %}
+
+<input name="{{id_prefix}}" id="{{id_prefix}}" type="text" {% if field_data.default is not none %}
+    value="{{ field_data.default }}" {% endif %}>
+
+{% elif field_data.type == "float" %}
+
+<input name="{{id_prefix}}" id="{{id_prefix}}" type="text" {% if field_data.default is not none %}
+    value="{{ field_data.default }}" {% endif %}>
+
+{% elif field_data.type == "path" %}
+
+<input name="{{id_prefix}}" id="{{id_prefix}}" type="text" {% if field_data.default is not none %}
+    value="{{ field_data.default }}" {% endif %}>
+
+{% elif field_data.type == "coordinate" %}
+
+<div id="{{ id_prefix }}_elements">
+
+</div>
+<button type="button" onclick="add_one('{{ id_prefix }}', '{{ field_data.element }}')">Add
+    one</button>
+<button type="button" onclick="remove_one('{{ id_prefix }}', '{{ field_data.element }}')">Remove
+    one</button>
+
+{% elif field_data.type == "choice" %}
+
+<select name='{{ id_prefix }}' id="{{ id_prefix }}"
+    onchange="fetch_configurable(this, '{{ id_prefix }}')">
+    <option value="" selected disabled hidden>Choose here</option>
+    {% for choice in field_data.choices %}
+    <option value="{{ choice }}">{{ choice }}</option>
+    {% endfor %}
+</select>
+
+{% elif field_data.type == "enum" %}
+
+<select name="{{id_prefix}}" id="{{ id_prefix }}">
+    <option value="" selected disabled hidden>Choose here</option>
+    {% for choice in field_data.choices %}
+    <option value="{{ choice }}">{{ choice }}</option>
+    {% endfor %}
+</select>
+
+{% elif field_data.type == "list" %}
+
+<div id="{{ id_prefix }}_sample" style="display:none">{{ render_field('', field_data.element, id_prefix+'_sample', '') }}</div>
+<div id="{{ id_prefix }}_elements" class="list_elements"></div>
+<button type="button" onclick="add_one('{{ id_prefix }}')">Add
+    one</button>
+<button type="button" onclick="remove_one('{{ id_prefix }}')">Remove
+    one</button>
+
+{% elif field_data.type == "dict" %}
+
+<div id="{{ id_prefix }}_elements">
+
+</div>
+<button type="button" onclick="dict_add_one('{{ id_prefix }}', '{{ field_data.key }}', '{{ field_data.value }}')">Add
+    one</button>
+<button type="button"
+    onclick="dict_remove_one('{{ id_prefix }}', '{{ field_data.key }}', '{{ field_data.value }}')">Remove
+    one</button>
+
+{% elif field_data.type == "tuple" %}
+
+{% for arg in field_data.args %}
+{{ render_field("", arg, id_prefix + '[' + (loop.index-1)|string + ']', "") }}
+{% endfor %}
+
+{% elif field_data.type == "configurable" %}
+
+<div>
+    {{ render_form(field_data.fields, id_prefix) }}
+</div>
+
+{% elif field_data.type == "bool" %}
+<div>
+    <input name="{{id_prefix}}" id="{{id_prefix}}" type="checkbox" {% if field_data.default %} checked {% endif %}>
+    <span></span>
+</div>
+{% elif field_data.type == "config_choice"%}
+
+{% set id_prefix = id_prefix %}
+{{ render_config_choice(field_data.options, id_prefix, []) }}
+{% endif %}
+{% endmacro %}

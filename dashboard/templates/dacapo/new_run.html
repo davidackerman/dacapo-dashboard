@@ -107,7 +107,7 @@
 <script src="{{ url_for('static', filename='table.js') }}"></script>
 <script>
     let checklists = document.getElementById("common-checklists").querySelectorAll(".checklist");
-        let table = $("#new-runs-table").DataTable({
+    let table = $("#new-runs-table").DataTable({
         columnDefs: [{
             orderable: false,
             className: 'select-checkbox',
@@ -130,7 +130,7 @@
         }
     });
 
-        let ids = { "tasks": new Set(), "datasplits": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
+    let ids = { "tasks": new Set(), "datasplits": new Set(), "architectures": new Set(), "trainers": new Set(), "users": new Set() };
     let elements = Array.from(checklists).reduce(function (o, x) {
         x.querySelectorAll("input").forEach(element => {
             o[element.id] = element
@@ -168,9 +168,14 @@
         console.log(array_data);
         fetch("{{ url_for('dacapo.delete_configs') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accept": "application/json" }, body: JSON.stringify(array_data) }).then(response => response.json()).then(data => {
             data.forEach((config) => {
-                console.log("deleted ", config["config_type"], config["name"], config["id"], elements[config['id']]);
-                let elem = elements[config["id"]];
+                console.log("deleted ", config["config_type"], config["name"], elements[config["name"]]);
+                let elem = elements[config["name"]];
+                ids[config["config_type"]].delete(config["name"]);
+                // remove break
+                elem.parentNode.removeChild(elem.nextSibling.nextSibling);
+                // remove span
                 elem.parentNode.removeChild(elem.nextSibling);
+                // remove checkbox
                 elem.parentNode.removeChild(elem);
             })
         });
@@ -199,6 +204,10 @@
             console.log(data)
             if (data.success) {
                 console.log("submitted");
+                for (const [key, value] of Object.entries(data.links)) {
+                    console.log(`${key}: ${value}`);
+                    window.open(value, "_blank")
+                }
             }
             else {
                 console.log("failed to submit")
