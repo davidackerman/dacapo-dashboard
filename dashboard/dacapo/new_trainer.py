@@ -1,7 +1,6 @@
-from flask import render_template, request, json, jsonify, url_for, redirect
+from flask import render_template, request, json, jsonify, url_for, redirect, current_app
 
 from .blue_print import bp
-from dashboard.stores import get_stores
 from dacapo.store.converter import converter
 
 from .helpers import get_config_names
@@ -13,7 +12,7 @@ def new_trainer():
     if request.method == "POST":
         try:
             data = request.json
-            get_stores().config.store_trainer_config(data)
+            current_app.config["stores"].config.store_trainer_config(data)
             return jsonify({"success": True})
         except Exception as e:
             raise (e)
@@ -25,7 +24,7 @@ def new_trainer():
         "dacapo/forms/trainer.html",
         fields=config_fields,
         id_prefix="trainer",
-        all_names=json.dumps(get_stores().config.retrieve_trainer_config_names()),
+        all_names=json.dumps(current_app.config["stores"].config.retrieve_trainer_config_names()),
     )
 
 
@@ -38,13 +37,13 @@ def new_trainer_from_existing(state):
         "dacapo/forms/trainer.html",
         fields=config_fields,
         id_prefix="trainer",
-        all_names=json.dumps(get_stores().config.retrieve_trainer_config_names()),
+        all_names=json.dumps(current_app.config["stores"].config.retrieve_trainer_config_names()),
         value=state,
     )
 
 @bp.route("/load_trainer/<name>", methods=["GET"])
 def load_trainer(name):
-    config = get_stores().config.retrieve_trainer_config(name)
+    config = current_app.config["stores"].config.retrieve_trainer_config(name)
     state_dict = converter.unstructure(config)
     state = json.dumps(state_dict).replace("/", "%2F")
 

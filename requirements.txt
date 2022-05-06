@@ -6,6 +6,7 @@ zarr
 click
 flask
 flask_wtf
+flask_login
 wtforms
 attr
 git+https://github.com/funkelab/dacapo

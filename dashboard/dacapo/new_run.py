@@ -1,8 +1,7 @@
 import subprocess
-from flask import json, render_template, g, request, jsonify
+from flask import json, render_template, g, current_app, request, jsonify
 from flask_login.utils import login_required
 
-from dashboard.stores import get_stores
 from .blue_print import bp
 from .helpers import get_checklist_data
 
@@ -14,7 +13,7 @@ from dacapo.experiments import RunConfig
 @bp.route("/delete_configs", methods=["POST"])
 def delete_configs():
     if request.method == "POST":
-        config_store = get_stores().config
+        config_store = current_app.config["stores"].config
         request_data = request.json
         deleted_configs = []
 
@@ -59,7 +58,7 @@ def delete_configs():
 @bp.route("/new_run", methods=["GET", "POST"])
 @login_required
 def create_new_run():
-    chargegroup = subprocess.getoutput(f'lsfgroup {g.user_info["name"]}')
+    chargegroup = subprocess.getoutput(f'lsfgroup {g.user_info["username"]}')
     if request.method == "GET":
         context = get_checklist_data()
         context["chargegroup"] = chargegroup
@@ -74,7 +73,7 @@ def create_new_run():
             request_data["trainers"],
         )
 
-        config_store = get_stores().config
+        config_store = current_app.config["stores"].config
         run_config_names = config_store.retrieve_run_config_names()
         run_config_basenames = [n.split(":")[0] for n in run_config_names]
         new_runs = [

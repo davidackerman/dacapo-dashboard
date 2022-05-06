@@ -3,7 +3,6 @@ import os
 from flask import Flask, render_template
 from flask_login.utils import login_required
 
-
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
@@ -40,7 +39,7 @@ def create_app(test_config=None):
 
     from . import stores
 
-    stores.init_app(app)
+    app.config["stores"] = stores.get_or_create_stores_as_named_tuple()
 
     from . import auth
 

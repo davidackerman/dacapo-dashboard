@@ -1,9 +1,8 @@
-from flask import render_template, request, jsonify, g, redirect, url_for
+from flask import render_template, request, jsonify, g, current_app, redirect, url_for
 from dacapo.experiments import RunConfig
 from flask_login.utils import login_required
 from dashboard.nextflow import Nextflow
 
-from dashboard.stores import get_stores
 from .blue_print import bp
 from .helpers import (
     get_checklist_data,
@@ -39,7 +38,7 @@ def get_runs():
     if request.method == "POST":
         request_data = request.json
 
-        config_store = get_stores().config
+        config_store = current_app.config["stores"].config
         run_config_names = config_store.retrieve_run_config_names(
             task_names=request_data["tasks"],
             datasplit_names=request_data["datasplits"],
@@ -80,7 +79,7 @@ def apply_config():
 def start_runs():
     if request.method == "POST":
         config_json = request.json
-        config_store = get_stores().config
+        config_store = current_app.config["stores"].config
         for run in config_json.pop("runs"):
             for i in range(int(config_json["repetitions"])):
                 run_config_name = ("_").join(

@@ -24,7 +24,7 @@ class Nextflow:
     main_script = "dacapo.nf"
 
     def __init__(self, user_info, ssh_key=None):
-        self.username = user_info["name"]
+        self.username = user_info["username"]
         self.api_token = user_info["api_token"]
         self.ssh_key = ssh_key
         self.headers = {

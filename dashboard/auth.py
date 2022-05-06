@@ -4,6 +4,7 @@ from flask import (
     Blueprint,
     flash,
     g,
+    current_app,
     redirect,
     render_template,
     request,
@@ -16,8 +17,6 @@ from flask_login.utils import login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from wtforms.fields.simple import TextAreaField
 from dashboard.authservice import create_auth_service
-
-from dashboard.stores import get_stores
 
 from bson.objectid import ObjectId
 
@@ -86,11 +85,11 @@ def register():
     authResponse = auth_service.authenticate_user(user_credentials)
     error_message = ""
     if authResponse.status_code == 200:
-        user_info = {"name": username, "api_token": api_token}
+        user_info = {"username": username, "api_token": api_token}
         nextflow = Nextflow(user_info, ssh_key)
         if nextflow.verified:
-            config_store = get_stores().config
-            config_store.store_user_info(user_info)
+            users_store = current_app.config["stores"].users
+            users_store.store_user_info(user_info)
             auth_service.login(user_credentials)
             session["user_info"] = user_info
             # setup_compute_environment...
@@ -142,8 +141,8 @@ def login():
     authResponse = auth_service.authenticate_user(user_credentials)
 
     if authResponse.status_code == 200:
-        config_store = get_stores().config
-        user_info = config_store.retrieve_user_info(user_credentials["username"])
+        users_store = current_app.config["stores"].users
+        user_info = users_store.retrieve_user_info(user_credentials["username"])
         if user_info:
             logged_in = auth_service.login(user_credentials)
             session["user_info"] = user_info
@@ -166,8 +165,8 @@ def login():
 @bp.before_app_request
 def load_logged_in_user():
     if hasattr(flask_login.current_user, "username"):
-        config_store = get_stores().config
-        user_info = config_store.retrieve_user_info(flask_login.current_user.username)
+        users_store = current_app.config["stores"].users
+        user_info = users_store.retrieve_user_info(flask_login.current_user.username)
         g.user_info = user_info
 
 

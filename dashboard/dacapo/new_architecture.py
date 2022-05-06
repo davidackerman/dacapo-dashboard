@@ -1,7 +1,6 @@
-from flask import render_template, request, json, jsonify, redirect, url_for
+from flask import render_template, request, json, jsonify, redirect, url_for,current_app
 
 from .blue_print import bp
-from dashboard.stores import get_stores
 from dacapo.store.converter import converter
 
 from .helpers import get_config_names
@@ -13,7 +12,7 @@ def new_architecture():
     if request.method == "POST":
         try:
             data = request.json
-            get_stores().config.store_architecture_config(data)
+            current_app.config["stores"].config.store_architecture_config(data)
             return jsonify({"success": True})
         except Exception as e:
             raise (e)
@@ -25,7 +24,7 @@ def new_architecture():
         "dacapo/forms/architecture.html",
         fields=config_fields,
         id_prefix="architecture",
-        all_names=json.dumps(get_stores().config.retrieve_architecture_config_names()),
+        all_names=json.dumps(current_app.config["stores"].config.retrieve_architecture_config_names()),
     )
 
 
@@ -38,14 +37,14 @@ def new_architecture_from_existing(state):
         "dacapo/forms/architecture.html",
         fields=config_fields,
         id_prefix="architecture",
-        all_names=json.dumps(get_stores().config.retrieve_architecture_config_names()),
+        all_names=json.dumps(current_app.config["stores"].config.retrieve_architecture_config_names()),
         value=state,
     )
 
 
 @bp.route("/load_architecture/<name>", methods=["GET"])
 def load_architecture(name):
-    config = get_stores().config.retrieve_architecture_config(name)
+    config = current_app.config["stores"].config.retrieve_architecture_config(name)
     state_dict = converter.unstructure(config)
     state = json.dumps(state_dict).replace("/", "%2F")
 

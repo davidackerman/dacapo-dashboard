@@ -1,7 +1,6 @@
-from flask import url_for
+from flask import url_for,current_app
 
 import attr
-from dashboard.stores import get_stores
 
 import dacapo
 from dacapo.experiments import Run
@@ -15,7 +14,7 @@ import pkgutil
 
 def get_checklist_data():
 
-    config_store = get_stores().config
+    config_store = current_app.config["stores"].config
     context = {
         "tasks": [
             (task, url_for("dacapo.load_task", name=task))
@@ -49,7 +48,7 @@ def get_config_names(class_name):
 
 def get_evaluator_score_names(task_config_name):
 
-    config_store = get_stores().config
+    config_store = current_app.config["stores"].config
     task_config = config_store.retrieve_task_config(task_config_name)
     task_instance = task_config.task_type(task_config)
     evaluator_score_names = task_instance.evaluator.criteria

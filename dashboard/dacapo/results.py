@@ -1,6 +1,5 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, g, current_app
 
-from dashboard.stores import get_stores
 from .blue_print import bp
 from .helpers import get_checklist_data
 
@@ -29,7 +28,7 @@ def get_results():
         )
         return render_template("dacapo/results.html", **context)
     elif request.method == "POST":
-        db = get_stores()
+        db = g.stores
         request_data = request.json
         runs = [
             {
