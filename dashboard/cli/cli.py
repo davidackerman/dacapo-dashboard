@@ -26,14 +26,14 @@ def cli(log_level):
 
 @cli.command()
 def dashboard():
-    from dashboard import create_app
+    from dashboard import create_app, socketio
     import socket
 
     app = create_app()
 
     url = socket.getfqdn()
-    SocketIO.run(host=url)
-    #app.run(host=url, debug=True)
+    socketio.run(app=app, host=url, debug=True)
+    # app.run(host=url, debug=True)
 
 
 @cli.command()

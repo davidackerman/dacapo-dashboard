@@ -2,6 +2,10 @@ import os
 
 from flask import Flask, render_template
 from flask_login.utils import login_required
+from flask_socketio import SocketIO
+
+socketio = SocketIO()
+
 
 def create_app(test_config=None):
     # create and configure the app
@@ -49,4 +53,5 @@ def create_app(test_config=None):
 
     app.register_blueprint(dacapo.bp)
 
+    socketio.init_app(app)
     return app

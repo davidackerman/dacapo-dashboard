@@ -2,7 +2,8 @@ import requests
 import json
 import subprocess
 from os.path import expanduser
-from flask import flash
+from flask_socketio import SocketIO, emit
+from dashboard import socketio
 
 
 class Nextflow:
@@ -94,24 +95,37 @@ class Nextflow:
             }
         }
 
-        flash(
-            f"Setting up first time compute environment for chargegroup {chargegroup}",
+        socketio.emit(
             "info",
+            json.dumps(
+                {
+                    "data": f"Setting up first time compute environment for chargegroup {chargegroup}"
+                }
+            ),
         )
+
         res = requests.post(
             url=f"{self.nextflow_api}/compute-envs",
             data=json.dumps(compute_env),
             headers=self.headers,
         )
         if res.status_code != 200:
-            flash(
-                f"Failed setting up first time compute environment for chargegroup {chargegroup}",
+            socketio.emit(
                 "error",
+                json.dumps(
+                    {
+                        "data": f"Failed setting up first time compute environment for chargegroup {chargegroup}"
+                    }
+                ),
             )
         else:
-            flash(
-                f"Set up first time compute environment for chargegroup {chargegroup}",
+            socketio.emit(
                 "success",
+                json.dumps(
+                    {
+                        "data": f"Set up first time compute environment for chargegroup {chargegroup}"
+                    }
+                ),
             )
 
         return res
@@ -153,7 +167,9 @@ class Nextflow:
             }
         }
 
-        flash(f'Submitting run {params_text["run_name"]}')
+        socketio.emit(
+            "info", json.dumps({"data": f'Submitting run {params_text["run_name"]}'})
+        )
         res = requests.post(
             url=f"{self.nextflow_api}/workflow/launch",
             data=json.dumps(workflow),
@@ -166,8 +182,16 @@ class Nextflow:
                 url=f"{self.nextflow_api}/workflow/{workflow_id}", headers=self.headers
             )
             user_name = res.json()["workflow"]["userName"]
-            flash(
-                f'Submitted run {params_text["run_name"]}, monitor at https://{self.host_name}/user/{user_name}/watch/{workflow_id}.'
+            socketio.emit(
+                "success",
+                json.dumps(
+                    {
+                        "data": f'Submitted run {params_text["run_name"]}, monitor <a href="https://{self.host_name}/user/{user_name}/watch/{workflow_id}" target="_blank">here</a>.'
+                    }
+                ),
             )
         else:
-            flash(f'Failed to submit run {params_text["run_name"]}')
+            socketio.emit(
+                "error",
+                json.dumps({"data": f'Failed to submit run {params_text["run_name"]}'}),
+            )
