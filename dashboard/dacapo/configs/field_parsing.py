@@ -1,7 +1,7 @@
 import importlib
 from dacapo.store.conversion_hooks import cls_fun
 import attr
-from funlib.geometry import Coordinate
+from funlib.geometry import Coordinate, Roi
 
 from .blue_print import bp
 from typing import get_origin, get_args, Union
@@ -45,6 +45,12 @@ def handle_special_cases(field_type, metadata):
             "type": "list",
             "help_text": metadata.get("help_text"),
             "element": get_field_type(int, {}),
+        }
+    elif field_type == Roi:
+        return {
+            "type": "list",
+            "help_text": metadata.get("help_text"),
+            "element": get_field_type(Coordinate, {}),
         }
 
 
@@ -147,7 +153,7 @@ def get_field_type(field_type, metadata):
     # behaves as list of ints for now.
     # TODO: allow users to specify dimensionality, all coordinates will be expected
     # to use that same dimensionality
-    special_cases = set([Coordinate])
+    special_cases = set([Coordinate, Roi])
     if get_name(field_type).endswith("Config"):
         # A Config used as a type should always be a parent class
         # i.e. ArrayConfig, DatasetConfig, etc. Never a specific Config
