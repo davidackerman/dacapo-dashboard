@@ -10,7 +10,6 @@ from collections import namedtuple
 from dashboard.user_store import UserStore
 
 
-
 def get_or_create_stores_as_named_tuple():
     Stores = namedtuple("stores", ["users", "config", "stats", "weights", "array"])
     return Stores(

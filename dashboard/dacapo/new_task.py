@@ -1,4 +1,12 @@
-from flask import render_template, request, json, jsonify, url_for, redirect, current_app
+from flask import (
+    render_template,
+    request,
+    json,
+    jsonify,
+    url_for,
+    redirect,
+    current_app,
+)
 
 from .blue_print import bp
 from dacapo.store.converter import converter
@@ -24,7 +32,9 @@ def new_task():
         "dacapo/forms/task.html",
         fields=config_fields,
         id_prefix="task",
-        all_names=json.dumps(current_app.config["stores"].config.retrieve_task_config_names()),
+        all_names=json.dumps(
+            current_app.config["stores"].config.retrieve_task_config_names()
+        ),
     )
 
 
@@ -37,9 +47,12 @@ def new_task_from_existing(state):
         "dacapo/forms/task.html",
         fields=config_fields,
         id_prefix="task",
-        all_names=json.dumps(current_app.config["stores"].config.retrieve_task_config_names()),
+        all_names=json.dumps(
+            current_app.config["stores"].config.retrieve_task_config_names()
+        ),
         value=state,
     )
+
 
 @bp.route("/load_task/<name>", methods=["GET"])
 def load_task(name):

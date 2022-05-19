@@ -1,4 +1,12 @@
-from flask import render_template, request, json, jsonify, url_for, redirect, current_app 
+from flask import (
+    render_template,
+    request,
+    json,
+    jsonify,
+    url_for,
+    redirect,
+    current_app,
+)
 
 from .blue_print import bp
 from dacapo.store.converter import converter
@@ -24,7 +32,9 @@ def new_datasplit():
         "dacapo/forms/datasplit.html",
         fields=config_fields,
         id_prefix="datasplit",
-        all_names=json.dumps(current_app.config["stores"].config.retrieve_datasplit_config_names()),
+        all_names=json.dumps(
+            current_app.config["stores"].config.retrieve_datasplit_config_names()
+        ),
     )
 
 
@@ -37,7 +47,9 @@ def new_datasplit_from_existing(state):
         "dacapo/forms/datasplit.html",
         fields=config_fields,
         id_prefix="datasplit",
-        all_names=json.dumps(current_app.config["stores"].config.retrieve_datasplit_config_names()),
+        all_names=json.dumps(
+            current_app.config["stores"].config.retrieve_datasplit_config_names()
+        ),
         value=state,
     )
 

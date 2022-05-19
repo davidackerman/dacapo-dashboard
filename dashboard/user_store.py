@@ -20,11 +20,13 @@ class UserStore:
             self.database = self.client[self.db_name]
 
             self.users = self.database["users"]
-            self.users.create_index([("username", ASCENDING)], name="username", unique=True)
-    
+            self.users.create_index(
+                [("username", ASCENDING)], name="username", unique=True
+            )
+
     def store_user_info(self, user_info):
         self.users.insert_one(dict(user_info))
-    
+
     def retrieve_user_info(self, username):
 
         user_info = self.users.find_one(

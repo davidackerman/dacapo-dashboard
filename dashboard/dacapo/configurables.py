@@ -27,12 +27,11 @@ def get_name(cls):
         return str(cls)
 
 
-
 @bp.route("/validate", methods=["POST"])
 def validate():
     name = request.json["name"]
     data = request.json["data"]
-    
+
     configurable = helpers.get_configurable(name)
     structured = converter.structure(data, configurable)
     try:

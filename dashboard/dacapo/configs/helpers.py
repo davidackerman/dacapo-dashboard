@@ -28,4 +28,3 @@ def get_configurables():
         for attr in dir(submodule):
             if attr.endswith("Config"):
                 yield (attr, getattr(submodule, attr))
-
