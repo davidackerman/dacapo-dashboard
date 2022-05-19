@@ -136,7 +136,14 @@ def handle_complex_types(field_type, metadata):
 
 def get_field_type(field_type, metadata):
     simple_types = set([int, str, float, bool, Path])
-    complex_types = set([list, dict, Union, tuple,])
+    complex_types = set(
+        [
+            list,
+            dict,
+            Union,
+            tuple,
+        ]
+    )
     # behaves as list of ints for now.
     # TODO: allow users to specify dimensionality, all coordinates will be expected
     # to use that same dimensionality

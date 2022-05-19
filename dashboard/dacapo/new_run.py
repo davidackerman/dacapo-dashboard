@@ -22,7 +22,10 @@ def delete_configs():
             assert task_doc is not None
             config_store.tasks.delete_one(task_doc)
             deleted_configs.append(
-                {"config_type": "tasks", "name": task_doc["name"],}
+                {
+                    "config_type": "tasks",
+                    "name": task_doc["name"],
+                }
             )
 
         for datasplit in request_data["datasplits"]:
@@ -30,7 +33,10 @@ def delete_configs():
             assert datasplit_doc is not None
             config_store.datasplits.delete_one(datasplit_doc)
             deleted_configs.append(
-                {"config_type": "datasplits", "name": datasplit_doc["name"],}
+                {
+                    "config_type": "datasplits",
+                    "name": datasplit_doc["name"],
+                }
             )
 
         for architecture in request_data["architectures"]:
@@ -40,7 +46,10 @@ def delete_configs():
             assert architecture_doc is not None
             config_store.architectures.delete_one(architecture_doc)
             deleted_configs.append(
-                {"config_type": "architectures", "name": architecture_doc["name"],}
+                {
+                    "config_type": "architectures",
+                    "name": architecture_doc["name"],
+                }
             )
 
         for trainer in request_data["trainers"]:
@@ -48,7 +57,10 @@ def delete_configs():
             assert trainer_doc is not None, f"Cannot find trainer with id: {trainer}"
             config_store.trainers.delete_one(trainer_doc)
             deleted_configs.append(
-                {"config_type": "trainers", "name": trainer_doc["name"],}
+                {
+                    "config_type": "trainers",
+                    "name": trainer_doc["name"],
+                }
             )
             print(jsonify(deleted_configs))
 

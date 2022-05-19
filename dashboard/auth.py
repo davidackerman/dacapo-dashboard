@@ -47,7 +47,8 @@ class RegisterForm(FlaskForm):
         "password", validators=[DataRequired("Password is required")]
     )
     api_token = StringField(
-        "api_token", validators=[DataRequired("API token is required")],
+        "api_token",
+        validators=[DataRequired("API token is required")],
     )
     ssh_key = TextAreaField("ssh_key", validators=[DataRequired("SSH key is required")])
 

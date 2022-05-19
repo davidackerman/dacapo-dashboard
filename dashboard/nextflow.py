@@ -53,7 +53,11 @@ class Nextflow:
         socketio.emit(
             "message",
             json.dumps(
-                {"username": self.username, "type": type, "message": f"{message}",}
+                {
+                    "username": self.username,
+                    "type": type,
+                    "message": f"{message}",
+                }
             ),
         )
 
@@ -66,7 +70,10 @@ class Nextflow:
             "credentials": {
                 "name": "dacapo",
                 "provider": "ssh",
-                "keys": {"privateKey": self.ssh_key, "passphrase": None,},
+                "keys": {
+                    "privateKey": self.ssh_key,
+                    "passphrase": None,
+                },
             }
         }
         res = requests.post(
