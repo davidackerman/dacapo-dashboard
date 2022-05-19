@@ -2,7 +2,6 @@ import requests
 import json
 import subprocess
 from os.path import expanduser
-from flask_socketio import SocketIO, emit
 from dashboard import socketio
 
 
@@ -36,19 +35,31 @@ class Nextflow:
 
         if ssh_key:
             # Then this is a first time setup, so need to validate
-            if self.is_valid_token():
-                if self.set_login_node_credentials().status_code != 200:
+            res = self.check_token_validity()
+            if res.status_code == 200:
+                res = self.set_login_node_credentials()
+                if res.status_code != 200:
                     self.verified = False
-                    self.error_message = "Invalid SSH Key"
+                    self.error_message = (
+                        f'Invalid SSH Key. Response: {res.status_code}. {"Error message: "+res.json()["message"] if res.status_code in [400,409] else ""}',
+                    )[0]
             else:
                 self.verified = False
-                self.error_message = "Invalid API Token"
+                self.error_message = (
+                    f'Invalid API Token. Response: {res.status_code}. {"Error message: "+res.json()["message"] if res.status_code in [400,409] else ""}',
+                )[0]
 
-    def is_valid_token(self):
+    def emit(self, type, message):
+        socketio.emit(
+            "message",
+            json.dumps(
+                {"username": self.username, "type": type, "message": f"{message}",}
+            ),
+        )
+
+    def check_token_validity(self):
         res = requests.get(url=f"{self.nextflow_api}/tokens", headers=self.headers)
-        if res.status_code == 200:
-            return True
-        return False
+        return res
 
     def set_login_node_credentials(self):
         credentials = {
@@ -95,13 +106,9 @@ class Nextflow:
             }
         }
 
-        socketio.emit(
-            "info",
-            json.dumps(
-                {
-                    "data": f"Setting up first time compute environment for chargegroup {chargegroup}"
-                }
-            ),
+        self.emit(
+            "Info",
+            f"Setting up first time compute environment for chargegroup {chargegroup}",
         )
 
         res = requests.post(
@@ -109,23 +116,16 @@ class Nextflow:
             data=json.dumps(compute_env),
             headers=self.headers,
         )
+
         if res.status_code != 200:
-            socketio.emit(
-                "error",
-                json.dumps(
-                    {
-                        "data": f"Failed setting up first time compute environment for chargegroup {chargegroup}"
-                    }
-                ),
+            self.emit(
+                "Error",
+                f'Failed setting up first time compute environment for chargegroup {chargegroup}.  Response: {res.status_code}. {"Error message: "+res.json()["message"] if res.status_code in [400,409] else ""}',
             )
         else:
-            socketio.emit(
-                "success",
-                json.dumps(
-                    {
-                        "data": f"Set up first time compute environment for chargegroup {chargegroup}"
-                    }
-                ),
+            self.emit(
+                "Success",
+                f"Set up first time compute environment for chargegroup {chargegroup}",
             )
 
         return res
@@ -152,46 +152,42 @@ class Nextflow:
 
         params_text["lsf_opts"] = f"-P {chargegroup}"
         compute_env_id = self.get_or_set_compute_environment(chargegroup)
-
-        workdir = expanduser(f"~{self.username}/") + ".dacapo/nextflow"
-        workflow = {
-            "launch": {
-                "computeEnvId": compute_env_id,
-                "pipeline": self.pipeline_repo,
-                "workDir": workdir,
-                "revision": self.revision,
-                "configProfiles": self.config_profiles,
-                "paramsText": json.dumps(params_text),
-                "mainScript": self.main_script,
-                "pullLatest": True,
+        if compute_env_id:
+            workdir = expanduser(f"~{self.username}/") + ".dacapo/nextflow"
+            workflow = {
+                "launch": {
+                    "computeEnvId": compute_env_id,
+                    "pipeline": self.pipeline_repo,
+                    "workDir": workdir,
+                    "revision": self.revision,
+                    "configProfiles": self.config_profiles,
+                    "paramsText": json.dumps(params_text),
+                    "mainScript": self.main_script,
+                    "pullLatest": True,
+                }
             }
-        }
 
-        socketio.emit(
-            "info", json.dumps({"data": f'Submitting run {params_text["run_name"]}'})
-        )
-        res = requests.post(
-            url=f"{self.nextflow_api}/workflow/launch",
-            data=json.dumps(workflow),
-            headers=self.headers,
-        )
+            self.emit("Info", f'Submitting run {params_text["run_name"]}')
 
-        if res.status_code == 200:
-            workflow_id = res.json()["workflowId"]
-            res = requests.get(
-                url=f"{self.nextflow_api}/workflow/{workflow_id}", headers=self.headers
+            res = requests.post(
+                url=f"{self.nextflow_api}/workflow/launch",
+                data=json.dumps(workflow),
+                headers=self.headers,
             )
-            user_name = res.json()["workflow"]["userName"]
-            socketio.emit(
-                "success",
-                json.dumps(
-                    {
-                        "data": f'Submitted run {params_text["run_name"]}, monitor <a href="https://{self.host_name}/user/{user_name}/watch/{workflow_id}" target="_blank">here</a>.'
-                    }
-                ),
-            )
-        else:
-            socketio.emit(
-                "error",
-                json.dumps({"data": f'Failed to submit run {params_text["run_name"]}'}),
-            )
+
+            if res.status_code == 200:
+                workflow_id = res.json()["workflowId"]
+                res = requests.get(
+                    url=f"{self.nextflow_api}/workflow/{workflow_id}",
+                    headers=self.headers,
+                )
+                user_name = res.json()["workflow"]["userName"]
+                self.emit(
+                    "Success",
+                    f'Submitted run {params_text["run_name"]}, monitor <a href="https://{self.host_name}/user/{user_name}/watch/{workflow_id}" target="_blank">here</a>.',
+                )
+            else:
+                self.emit(
+                    "Error",
+                    f'Failed to submit run {params_text["run_name"]}. Response: {res.status_code}. {"Error message: "+res.json()["message"] if res.status_code in [400,409] else ""}',
+                )
