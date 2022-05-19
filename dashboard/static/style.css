@@ -193,23 +193,23 @@ tr.existing_job td{
   }
 .alert {
     padding: 20px;
-    background-color: #f44336;
+    background-color: #ff9800;
     color: white;
     opacity: 1;
     transition: opacity 0.6s;
     margin-bottom: 15px;
 }
 
-.alert.success {
+.alert.Success {
     background-color: #04AA6D;
 }
 
-.alert.info {
+.alert.Info {
     background-color: #2196F3;
 }
 
-.alert.error {
-    background-color: #ff9800;
+.alert.Error {
+    background-color: #f44336;
 }
 
 .closebtn {
