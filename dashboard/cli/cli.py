@@ -25,15 +25,27 @@ def cli(log_level):
 
 
 @cli.command()
-def dashboard():
+@click.option(
+    "--host",
+    type=str,
+    help="The (optional) host name for providing your server",
+    default=None,
+)
+@click.option(
+    "--port",
+    type=int,
+    help="The port to provide your server on. By Default 5000",
+    default=5000,
+)
+def dashboard(host, port):
     from dashboard import create_app, socketio
     import socket
 
     app = create_app()
 
     url = socket.getfqdn()
-    socketio.run(app=app, host=url, debug=True)
-    # app.run(host=url, debug=True)
+    url = host if host is not None else url
+    socketio.run(app=app, host=url, debug=True, port=port)
 
 
 @cli.command()
