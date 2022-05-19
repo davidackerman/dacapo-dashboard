@@ -12,7 +12,7 @@
     </ul>
     <ul class="users">
         {% if g.user %}
-        <li><span>{{ g.user['username'] }}</span>
+        <li><span>{{ g.user_info['username'] }}</span>
         <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
         {% else %}
         <li><a href="{{ url_for('auth.register') }}">Register</a>
@@ -35,6 +35,7 @@
 <script src="{{ url_for('static', filename='jquery.js') }}"></script>
 <script src="{{ url_for('static', filename='jquery_datatables.js') }}"></script>
 <script src="{{ url_for('static', filename='datatables.js') }}"></script>
+<script src="{{ url_for('static', filename='he.js') }}"></script>
 <script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-2.3.1.min.js"></script>
 <script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-widgets-2.3.1.min.js"></script>
 

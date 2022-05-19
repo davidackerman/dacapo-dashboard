@@ -1,5 +1,6 @@
 import importlib
 from dacapo.store.conversion_hooks import cls_fun
+from dacapo.store.converter import converter
 from flask import request, jsonify, render_template
 import attr
 from funlib.geometry import Coordinate
@@ -24,6 +25,21 @@ def get_name(cls):
         return cls.__name__
     except AttributeError:
         return str(cls)
+
+
+@bp.route("/validate", methods=["POST"])
+def validate():
+    name = request.json["name"]
+    data = request.json["data"]
+
+    configurable = helpers.get_configurable(name)
+    structured = converter.structure(data, configurable)
+    try:
+        success, msg = structured.validate()
+    except Exception as e:
+        success = False
+        msg = e
+    return jsonify({"success": success, "error_msg": msg})
 
 
 @bp.route("/configurable", methods=["POST"])
@@ -82,7 +98,6 @@ def configurable():
             "dacapo/forms/subform.html", fields=fields, id_prefix=id_prefix
         )
     except (attr.exceptions.NotAnAttrsClassError, TypeError) as e:
-        print(e)
         field = get_field_type(configurable, {})
         html = render_template(
             "dacapo/forms/field.html", field=field, id_prefix=id_prefix

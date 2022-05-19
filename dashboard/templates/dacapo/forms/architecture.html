@@ -1,14 +1,16 @@
-{% extends 'dacapo/forms/base_form.html' %}
-{% from "dacapo/forms/render_macro.html" import render_form_from_choice %}
+{% extends 'dacapo/configs/base_form.html' %}
+{% from "dacapo/configs/macros/config_choice.html" import render_config_choice %}
 
 {% block header %}
 <h1>{% block title %}Create New Architecture{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
-<form id="new-configurable-form"
-    onsubmit="return submit_form('{{ url_for('dacapo.new_architecture') }}', '{{ url_for('dacapo.create_new_run') }}')">
-    {{ render_form_from_choice(fields, id_prefix, "", all_names, 0) }}
+<form id="{{ id_prefix }}"
+    onsubmit="return submit_form('{{ url_for('dacapo.new_architecture') }}', '{{ url_for('dacapo.create_new_run') }}', '{{ id_prefix }}')">
+    {{ render_config_choice(fields, id_prefix, all_names) }}
     <input id="go_button" type="submit" value="Save" enabled>
+    <input type="button" id="go_button" value="Copy" enabled
+        onclick="copy_form('{{ url_for('dacapo.new_architecture') }}', '{{ id_prefix }}')">
 </form>
 {% endblock %}

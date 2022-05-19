@@ -3,6 +3,7 @@ import click
 import logging
 from pathlib import Path
 import sys
+from flask_socketio import SocketIO
 
 
 @click.group()
@@ -25,13 +26,14 @@ def cli(log_level):
 
 @cli.command()
 def dashboard():
-    from dashboard import create_app
+    from dashboard import create_app, socketio
     import socket
 
     app = create_app()
 
     url = socket.getfqdn()
-    app.run(host=url, debug=True)
+    socketio.run(app=app, host=url, debug=True)
+    # app.run(host=url, debug=True)
 
 
 @cli.command()

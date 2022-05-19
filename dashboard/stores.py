@@ -1,5 +1,3 @@
-from flask import g
-
 from dacapo.store import (
     create_config_store,
     create_stats_store,
@@ -9,32 +7,13 @@ from dacapo.store import (
 
 from collections import namedtuple
 
-
-def get_stores():
-    if "stores" not in g:
-        g.stores = get_stores_as_named_tuple()
-
-    return g.stores
+from dashboard.user_store import UserStore
 
 
-def close_stores(e=None):
-    g.pop("stores", None)
-
-
-def init_app(app):
-    # TODO: What needs to go here
-    stores = get_stores_as_named_tuple()
-    # app.config["MONGODB_SETTINGS"] = {
-    #     "db": dacapo_db.db_name,
-    #     "host": dacapo_db.db_host,
-    # }
-
-    # dacapo_db.init_app(app)
-
-
-def get_stores_as_named_tuple():
-    Stores = namedtuple("stores", ["config", "stats", "weights", "array"])
+def get_or_create_stores_as_named_tuple():
+    Stores = namedtuple("stores", ["users", "config", "stats", "weights", "array"])
     return Stores(
+        UserStore(),
         create_config_store(),
         create_stats_store(),
         create_weights_store(),

@@ -1,6 +1,10 @@
 import os
 
 from flask import Flask, render_template
+from flask_login.utils import login_required
+from flask_socketio import SocketIO
+
+socketio = SocketIO()
 
 
 def create_app(test_config=None):
@@ -24,8 +28,13 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    from .authservice import create_login_manager
+
+    create_login_manager(app)
+
     # a simple page that says hello
     @app.route("/hello")
+    @login_required
     def hello():
         return "Hello, World!"
 
@@ -35,7 +44,7 @@ def create_app(test_config=None):
 
     from . import stores
 
-    stores.init_app(app)
+    app.config["stores"] = stores.get_or_create_stores_as_named_tuple()
 
     from . import auth
 
@@ -45,4 +54,5 @@ def create_app(test_config=None):
 
     app.register_blueprint(dacapo.bp)
 
+    socketio.init_app(app)
     return app

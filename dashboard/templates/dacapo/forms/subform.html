@@ -1,6 +1,0 @@
-{% from "dacapo/forms/render_macro.html" import render_form, render_form_from_choice %}
-{% if fields.type == "render_from_choice" %}
-{{ render_form_from_choice(fields.config_name_to_fields_dict, id_prefix, value,[], subid) }}
-{% else %}
-{{ render_form("",fields, id_prefix, value,"",subid) }}
-{% endif %}

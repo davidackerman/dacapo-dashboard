@@ -5,11 +5,43 @@
 {% endblock %}
 
 {% block content %}
-  <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Register">
-  </form>
+<form action="{{ url_for('auth.register') }}" method="post">
+  {{ form.csrf_token }}
+  <dl>
+    Welcome! DaCapo relies on Nextflow Tower to run jobs on the cluster. You were brought to this page because you are a
+    first time user who needs to do a one-time free Nextflow account setup. The entire process should take &lt;5
+    mins
+    and once completed, you should not have to do this again: <br><br>
+    1. From login1 or login2, <a href="https://www.nextflow.io/docs/latest/getstarted.html">install nextflow</a>.<br>
+    2. From login1 or login2, copy the entire content from the ~/.ssh/id_rsa file and paste it in the
+    SSH Key field below.<br>
+    3. login to <a href="https://nextflow.int.janelia.org/login">nextflow</a> using your
+    usual Janelia OKTA
+    credentials (OpenID), or via email.<br>
+    4. Click the profile image in the top right and select "New Token". Name it (eg. "dacapo") and copy and paste the
+    token into
+    the API token field below.<br>
+    5. Enter your User Name and Password in the corresponding fields below and click register.
+    <p><input type="hidden" name="next" value="{{next}}" /></p>
+    <dt>Username:</dt>
+    <dd>{{ form.username(autofocus=true, class="form-control") }}</dd>
+
+    {% for error in form.errors.username %}
+    <span class="form-field-error">{{error}}</span>
+    {% endfor %}
+
+    <dt>Password:</dt>
+    <dd>{{ form.password(class="form-control") }}</dd>
+
+    <dt>API Token:</dt>
+    <dd>{{ form.api_token(class="form-control") }}</dd>
+
+    <dt>SSH Key:</dt>
+    <dd>{{ form.ssh_key(class="form-control") }}</dd>
+  </dl>
+  {% if error_message != '' %}
+  <span style="color:red">{{ error_message}}</span></br>
+  {% endif %}
+  <input type="submit" value="Register" class="btn btn-info">
+</form>
 {% endblock %}

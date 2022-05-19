@@ -10,7 +10,9 @@
         </div>
         <div class="scroll_checklist">
             {% for task in tasks %}
-            <input type="checkbox" id="{{task}}" /><span title="{{task}}" onclick="copyJsonData(this.title)"> {{task}} </span><br />
+            <input type="checkbox" id="{{task.0}}" /><span title="{{task.0}}" onclick="copyJsonData(this.title)">
+                <a href="{{task.1}}">{{task.0}}</a>
+            </span><br />
             {% endfor %}
         </div>
 
@@ -38,8 +40,9 @@
         </div>
         <div class="scroll_checklist">
             {% for architecture in architectures %}
-            <input type="checkbox" id="{{architecture}}" /><span title="{{architecture}}" onclick="copyJsonData(this.title)">
-                {{architecture}} </span><br />
+            <input type="checkbox" id="{{architecture.0}}" /><span title="{{architecture.0}}" onclick="copyJsonData(this.title)">
+                <a href="{{architecture.1}}">{{architecture.0}}</a>
+            </span><br />
             {% endfor %}
         </div>
 
@@ -52,8 +55,9 @@
         </div>
         <div class="scroll_checklist">
             {% for trainer in trainers %}
-            <input type="checkbox" id="{{trainer}}" /><span title="{{trainer}}" onclick="copyJsonData(this.title)">
-                {{trainer}} </span><br />
+            <input type="checkbox" id="{{trainer.0}}" /><span title="{{trainer.0}}" onclick="copyJsonData(this.title)">
+                <a href="{{trainer.1}}">{{trainer.0}}</a>
+            </span><br />
             {% endfor %}
         </div>
 

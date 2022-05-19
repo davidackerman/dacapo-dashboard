@@ -1,0 +1,438 @@
+{% extends 'base.html' %}
+
+{% block javascript %}
+{{ super() }}
+<style>
+    div[class$='_configurable_field'] {
+        display: block;
+    }
+
+    div[id$='invalid_name_notification'] {
+        display: none;
+        color: red;
+    }
+
+    div[id$='invalid_config_notification'] {
+        display: none;
+        color: red;
+    }
+</style>
+<script>
+    function copy_form(url, form_id) {
+        let form = document.getElementById(form_id);
+        let config_data = getSubFormData(form);
+        let encoded_json = JSON.stringify(config_data);
+        console.log(encoded_json);
+        encoded_json = encodeURIComponent(encoded_json);
+        console.log(encoded_json);
+        encoded_json = encoded_json.replaceAll("%2F", "%252F");
+        console.log(encoded_json);
+
+        var w = window.open(url + "/" + encoded_json);
+    };
+
+    function config_losing_focus(element, event, url) {
+        if (!element.contains(event.relatedTarget)) {
+            verify_configurable(element, url);
+        }
+    }
+
+    function verify_form(url, form_id) {
+        let form = document.getElementById(form_id)
+        verify_configurable(form, url);
+        return false;
+    }
+
+    function verify_configurable(element, url) {
+        let config_data = getSubFormData(element);
+
+        fetch(url, { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify(config_data) }).then(response => response.json()).then(data => {
+            invalid_config_notification_div = document.getElementById(element.id + "_invalid_config_notification");
+            if (!data["success"]) {
+                invalid_config_notification_div.innerHTML = data["message"];
+                invalid_config_notification_div.style.display = "block";
+            } else {
+                invalid_config_notification_div.style.display = "none";
+            };
+        });
+
+    }
+
+    function submit_form(url, redirect_url, form_id) {
+        let form = document.getElementById(form_id)
+        let form_data = getSubFormData(form);
+        // submit form_data
+
+        fetch(url, { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify(form_data) }).then(response => response.json()).then(data => {
+            if (data["success"]) {
+                console.log("successfully created config: redirecting");
+                window.location.replace(redirect_url);
+            } else {
+                console.log("failed to create config");
+                console.log(data["error"])
+            }
+        });
+        return false;
+    }
+
+    async function setSubFormData(element, form_data) {
+
+        let id_prefix = element.id;
+
+        let current_objects = [["", { [id_prefix]: form_data }]];
+
+        let final_values = [];
+
+        while (current_objects.length > 0) {
+            let [current_key, current_object] = current_objects.pop();
+
+            for (let [sub_key, sub_object] of Object.entries(current_object)) {
+                // if sub_key is an integer, we want to replace .0. with [0]
+                let num = Number(sub_key);
+                let this_key = "";
+                if (Number.isInteger(num) && num >= 0) {
+                    // remove leading . if present:
+                    this_key = current_key.slice(0, current_key.length - 1) + "[" + sub_key + "]";
+                } else if (sub_key === "__type__" && sub_object !== null) {
+                    let key_pieces = current_key.split(".");
+                    key_pieces = key_pieces.slice(0, key_pieces.length - 2);
+                    key_pieces.push(sub_key);
+                    this_key = key_pieces.join(".");
+
+                } else {
+                    this_key = current_key + sub_key
+                }
+                // Key is either an array index or object key
+                if (typeof (sub_object) == "object" && sub_object !== null) {
+                    if (sub_object.hasOwnProperty("__type__")) {
+                        if (sub_object.__type__ !== null) {
+                            this_key = this_key + "." + sub_object.__type__;
+                            let sub_div = document.getElementById(this_key);
+                            if (sub_div.getAttribute("data-loaded") == "false") {
+                                await fetch(`/dacapo/configs/configurable/${sub_object.__type__}/${this_key}`, {
+                                    method: "GET",
+                                }).then(response => response.json()).then(data => {
+                                    let html = data["html"];
+                                    sub_div.innerHTML = html;
+                                    sub_div.setAttribute("data-loaded", "true");
+                                    return "hahahahaha";
+                                });
+                            }
+                        }
+                    } else if (Array.isArray(sub_object)) {
+                        for (let i = 0; i < sub_object.length; i++) {
+                            if (document.getElementById(this_key + `[${i}]`) === null && document.getElementById(this_key + "_sample") !== null) {
+                                add_one(this_key);
+                            }
+                        }
+                    };
+                    current_objects.push([this_key + ".", sub_object]);
+                } else if (sub_object !== null) {
+                    final_values.push([this_key, sub_object]);
+                }
+            };
+        };
+
+        final_values.forEach(([id, value]) => {
+            let input_element = document.getElementById(id);
+            if (value !== null || input_element.tagName !== "SELECT") {
+                input_element.value = value;
+            }
+            if (typeof (input_element.onchange) === "function") {
+                input_element.onchange();
+            }
+            if (typeof (input_element.onkeyup) === "function") {
+                input_element.onkeyup();
+            }
+        });
+    }
+
+    function getSubFormData(element) {
+
+        /* serialize form data */
+        let data = {};
+        let form_elements = element.querySelectorAll("[name]")
+        let name, hold, splits, L, dict_key;
+
+        let id_prefix = element.id;
+        let prefix_components = id_prefix.split(".");
+        let config_type = prefix_components[prefix_components.length - 1];
+
+        let names = Array.from(form_elements).map(x => x.getAttribute("name"));
+
+        form_elements.forEach(function (node) {
+            if ($(node).is(':visible')) {
+                name = node.name
+                hold = '';
+                let components = name.split('.').slice(prefix_components.length).filter(word => !word.endsWith("Config"));
+                let keys = [];
+                components.forEach(function (component, index) {
+                    if (component.indexOf("[") >= 0) {
+                        let sub_components = component.split("[")
+                        let k = sub_components.shift();
+                        keys.push(k);
+                        while (sub_components.length > 0) {
+                            let next_index = sub_components.shift();
+                            let i = parseInt(next_index.substring(0, next_index.length - 1));
+                            keys.push(i);
+                        }
+                    }
+                    else {
+                        keys.push(component);
+                    }
+                })
+
+                L = keys.length;
+                function get_datatype(i) {
+                    if (i == L - 1) {
+                        // if x is the last key then it will be replaced with some value
+                        // cannot skip this case incase last key is an array index
+                        return null
+                    } else if (Number.isInteger(keys[i + 1])) {
+                        // if the next key is an integer, than this key is an array
+                        let sub_array = [];
+                        // make sure this array is long enough that indexing next key will work
+                        for (j = 0; j < keys[i + 1] + 1; j++) {
+                            sub_array.push(get_datatype(i + 1));
+                        }
+                        return sub_array;
+                    } else {
+                        // if this is not the last key, and it has sub keys, this element is an object
+                        return {}
+                    }
+                }
+
+                let sub_data = data;
+                if (L === 0) {
+                    console.log("Should not be reachable!");
+                }
+                else {
+                    keys.forEach(function (x, i) {
+                        if (i == L - 1) {
+                            // if x is the last key in keys, simply fill in the value
+                            if (node.value === "") {
+                                sub_data[x] = null
+                            } else {
+                                sub_data[x] = (node.type === "checkbox") ? node.checked : node.value;
+                            }
+                        } else {
+                            if (x in sub_data || (Number.isInteger(x) && sub_data[x] != null)) {
+                                sub_data = sub_data[x]
+                            } else {
+                                sub_data[x] = get_datatype(i)
+                                sub_data = sub_data[x]
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+        function find_and_correct_dicts(data) {
+
+            for (let key in data) {
+                if ((data[key] instanceof Object || data[key] instanceof Array ||
+                    typeof data[key] === 'object' || typeof data[key] === 'array')
+                    && data[key] !== null) {
+                    find_and_correct_dicts(data[key])
+                }
+                if (key == "dict_key") { //Then should be an array and a dict_value should be in the same level of the object
+                    find_and_correct_dicts(data["dict_value"]) //Need this here since we delete dict_value when we delete dict_key
+                    for (index in data[key]) {
+                        if (typeof data[key][index] === 'string' || data[key][index] instanceof String) {
+                            new_key = data[key][index]
+                        } else { //then should be obj with __type__ and value so concatenate key/value pairs
+                            new_key = data[key][index]["__type__"] + '::' + data[key][index]["value"]
+                        }
+                        data[new_key] = data["dict_value"][index]
+                    }
+                    delete data["dict_key"]
+                    delete data["dict_value"]
+                }
+            }
+
+        }
+        find_and_correct_dicts(data);
+
+        return data;
+    }
+
+
+    function toggle_visible(id) {
+        var x = document.getElementById(id);
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+    }
+
+    function check_name(elem, all_names) {
+        if (all_names != "[]") {
+            all_names = all_names.replaceAll("'", '"');
+            all_names_array = JSON.parse(all_names)
+            user_defined_name = elem.value
+            elem_name = elem.name
+            invalid_name_notification_div = document.getElementById(elem_name + "_invalid_name_notification")
+
+            if (user_defined_name === "") {
+                invalid_name_notification_div.innerHTML = "A valid name must be entered"
+            }
+            else {
+                invalid_name_notification_div.innerHTML = "Name already in use!"
+            }
+
+            if (all_names_array.includes(user_defined_name) || user_defined_name === "") {
+                invalid_name_notification_div.style.display = "block";
+                // document.getElementById("go_button").disabled = true
+            } else {
+                invalid_name_notification_div.style.display = "none";
+                //document.getElementById("go_button").disabled = false
+            }
+        }
+
+    }
+
+    function fetch_configurable(element, id) {
+        let old_subform = document.getElementById(id + "_subform");
+        let subform = document.createElement("div");
+        subform.setAttribute("id", id + "_subform");
+        subform.setAttribute("class", "config_element");
+        fetch(`/dacapo/configs/configurable/${element.value}/${id}`, {
+            method: "GET",
+        }).then(
+            response => response.json()
+        ).then(data => {
+            let html = data["html"];
+            // delete old subform if it exists:
+            if (old_subform !== null) {
+                old_subform.parentNode.removeChild(old_subform);
+            }
+            subform.innerHTML = html;
+            element.parentElement.appendChild(subform);
+        });
+    };
+    function add_one(id) {
+        let sample = document.getElementById(id + "_sample");
+        let list_div = document.getElementById(id + "_elements");
+        let num_elements = list_div.childElementCount;
+        let new_element = sample.cloneNode(true);
+        let new_id = id + "[" + num_elements + "]";
+        new_element.setAttribute("id", new_id);
+        new_element.innerHTML = new_element.innerHTML.replaceAll(id + "_sample", new_id);
+        if (new_element.childElementCount === 1) {
+            new_element = new_element.children[0];
+        }
+        new_element.setAttribute("class", "list_element");
+        new_element.setAttribute("style", "display:block");
+        list_div.appendChild(new_element);
+    }
+    function remove_one(id) {
+        let list_div = document.getElementById(id + "_elements");
+        let num_elements = list_div.childElementCount;
+        if (num_elements > 0) {
+            let remove_id = id + "[" + (num_elements - 1) + "]";
+            let child_to_remove = document.getElementById(remove_id);
+            list_div.removeChild(child_to_remove);
+        }
+    };
+    function dict_add_one(id, key, value) {
+        let dict_div = document.getElementById(id + "_elements");
+        let num_elements = dict_div.childElementCount;
+        let new_key_id = id + ".dict_key[" + (num_elements) + "]";
+        let new_value_id = id + ".dict_value[" + (num_elements) + "]";
+        let key_promise = fetch(`/dacapo/configs/configurable/${key}/${new_key_id}`, {
+            method: "GET",
+        }).then(response => response.json())
+        let value_promise = fetch(`/dacapo/configs/configurable/${value}/${new_value_id}`, {
+            method: "GET",
+        }).then(response => response.json())
+        Promise.all([key_promise, value_promise]).then(data => {
+            let key_data = data[0];
+            let value_data = data[1];
+            let key_html = key_data["html"];
+            let value_html = value_data["html"];
+            let num_elements = dict_div.childElementCount;
+            let new_element = document.createElement("div");
+            new_element.setAttribute("id", id + "[" + num_elements + "]");
+            new_element.setAttribute("class", "dict_element");
+            let key_div = document.createElement("div");
+            key_div.setAttribute("id", new_key_id);
+            let value_div = document.createElement("div");
+            value_div.setAttribute("id", new_value_id);
+            key_div.innerHTML = key_html;
+            value_div.innerHTML = value_html;
+            new_element.appendChild(key_div);
+            new_element.appendChild(value_div);
+            dict_div.appendChild(new_element);
+
+        });
+    }
+    function dict_remove_one(id, key, value) {
+        let list_div = document.getElementById(id + "_elements");
+        let num_elements = list_div.childElementCount;
+        if (num_elements > 0) {
+            let remove_id = id + "[" + (num_elements - 1) + "]";
+            let child_to_remove = document.getElementById(remove_id);
+            list_div.removeChild(child_to_remove);
+        }
+    };
+    function call_visible_children_onchange(elem) {
+        var children = elem.children;
+        for (var i = 0; i < children.length; i++) {
+            if (children[i].hasChildNodes()) {
+                grandchildren = children[i].children;
+                for (var j = 0; j < grandchildren.length; j++) {
+                    if ($(grandchildren[j]).is("select")) {
+                        grandchildren[j].onchange();
+                    }
+                    else {
+                        call_visible_children_onchange(grandchildren[j]);
+                    }
+                }
+            }
+        }
+    }
+
+    function show_corresponding_fields(elem, id_prefix) {
+        var config_name = elem.value;
+        let options_wrapper = document.getElementById(id_prefix + '_options')
+        let divs = options_wrapper.querySelectorAll(':scope > div[class*="configurable_field"]');
+        var arr = []
+        for (var i = 0; i < divs.length; ++i) {
+            var s = divs[i].style;
+            if (divs[i].id === id_prefix + "." + config_name) {
+                if (divs[i].getAttribute("data-loaded") === "false") {
+                    let current_div = divs[i]; // i will have changed by the time the fetch returns
+                    // fetch("{{ url_for('dacapo.configs.configurable') }}", { method: "POST", headers: { "Content-Type": 'application/json', "Accepts": "application/json" }, body: JSON.stringify({ "name": config_name, "id_prefix": id_prefix + "." + config_name }) })
+                    fetch(`/dacapo/configs/configurable/${config_name}/${id_prefix}.${config_name}`, {
+                        method: "GET",
+                    }).then(response => response.json()).then(data => {
+                        let html = data["html"];
+                        current_div.innerHTML = html;
+                        current_div.setAttribute("data-loaded", "true");
+                    });
+                }
+                s.display = 'block';
+                arr.push(divs[i]);
+            }
+            else {
+                s.display = 'none';
+            }
+        };
+        for (var i = 0; i < arr.length; i++) {
+            call_visible_children_onchange(arr[i]);
+        }
+    }
+
+    {% if value is defined %}
+    async function setValue(json_string) {
+        let form_element = document.getElementById("{{ id_prefix }}");
+        let form_data = JSON.parse(json_string);
+        await setSubFormData(form_element, form_data);
+    }
+    // setValue(decodeURIComponent('{{ value }}'));
+    setValue(he.decode('{{ value }}'));
+    {% endif %}
+</script>
+{% endblock %}

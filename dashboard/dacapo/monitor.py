@@ -1,7 +1,10 @@
-from flask import render_template, request, jsonify, redirect, url_for
+import json
+from flask import render_template, request, jsonify, g, current_app, redirect, url_for
 from dacapo.experiments import RunConfig
+from flask_login.utils import login_required
+from dashboard import socketio
+from dashboard.nextflow import Nextflow
 
-from dashboard.stores import get_stores
 from .blue_print import bp
 from .helpers import (
     get_checklist_data,
@@ -29,6 +32,7 @@ def plot():
 
 
 @bp.route("/runs", methods=["GET", "POST"])
+@login_required
 def get_runs():
     if request.method == "GET":
         context = get_checklist_data()
@@ -36,7 +40,7 @@ def get_runs():
     if request.method == "POST":
         request_data = request.json
 
-        config_store = get_stores().config
+        config_store = current_app.config["stores"].config
         run_config_names = config_store.retrieve_run_config_names(
             task_names=request_data["tasks"],
             datasplit_names=request_data["datasplits"],
@@ -77,7 +81,7 @@ def apply_config():
 def start_runs():
     if request.method == "POST":
         config_json = request.json
-        config_store = get_stores().config
+        config_store = current_app.config["stores"].config
         for run in config_json.pop("runs"):
             for i in range(int(config_json["repetitions"])):
                 run_config_name = ("_").join(
@@ -107,7 +111,27 @@ def start_runs():
                     num_iterations=int(config_json["num_iterations"]),
                     validation_interval=int(config_json["validation_interval"]),
                 )
-                config_store.store_run_config(run_config)
-                train(run_config_name)
+
+                try:
+                    config_store.store_run_config(run_config)
+                    nextflow = Nextflow(g.user_info)
+                    params_text = {
+                        "run_name": run_config_name,
+                        "cpus": 5,
+                    }
+                    nextflow.launch_workflow(params_text, config_json["chargegroup"])
+                except Exception as e:
+                    socketio.emit(
+                        "message",
+                        json.dumps(
+                            {
+                                "username": g.user_info["username"],
+                                "type": "Error",
+                                "message": str(e),
+                            }
+                        ),
+                    )
+
+                # train(run_config_name)
 
     return jsonify({"success": True})
