@@ -3,7 +3,7 @@ import click
 import logging
 from pathlib import Path
 import sys
-from flask_socketio import SocketIO
+# from flask_socketio import SocketIO
 
 
 @click.group()

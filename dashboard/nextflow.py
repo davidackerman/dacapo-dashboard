@@ -2,7 +2,7 @@ import requests
 import json
 import subprocess
 from os.path import expanduser
-from dashboard import socketio
+# from dashboard import socketio
 
 
 class Nextflow:
@@ -50,6 +50,7 @@ class Nextflow:
                 )[0]
 
     def emit(self, type, message):
+        return
         socketio.emit(
             "message",
             json.dumps(

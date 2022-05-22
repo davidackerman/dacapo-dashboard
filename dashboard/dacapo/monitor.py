@@ -2,7 +2,7 @@ import json
 from flask import render_template, request, jsonify, g, current_app, redirect, url_for
 from dacapo.experiments import RunConfig
 from flask_login.utils import login_required
-from dashboard import socketio
+# from dashboard import socketio
 from dashboard.nextflow import Nextflow
 
 from .blue_print import bp
@@ -121,16 +121,17 @@ def start_runs():
                     }
                     nextflow.launch_workflow(params_text, config_json["chargegroup"])
                 except Exception as e:
-                    socketio.emit(
-                        "message",
-                        json.dumps(
-                            {
-                                "username": g.user_info["username"],
-                                "type": "Error",
-                                "message": str(e),
-                            }
-                        ),
-                    )
+                    pass
+                    # socketio.emit(
+                    #     "message",
+                    #     json.dumps(
+                    #         {
+                    #             "username": g.user_info["username"],
+                    #             "type": "Error",
+                    #             "message": str(e),
+                    #         }
+                    #     ),
+                    # )
 
                 # train(run_config_name)
 
