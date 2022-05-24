@@ -2,7 +2,7 @@ import json
 from flask import render_template, request, jsonify, g, current_app, redirect, url_for
 from dacapo.experiments import RunConfig
 from flask_login.utils import login_required
-# from dashboard import socketio
+from dashboard import socketio
 from dashboard.nextflow import Nextflow
 
 from .blue_print import bp
@@ -11,6 +11,7 @@ from .helpers import (
     get_evaluator_score_names,
 )
 from dacapo import train
+from dacapo.options import parse_options
 
 import itertools
 
@@ -118,20 +119,25 @@ def start_runs():
                     params_text = {
                         "run_name": run_config_name,
                         "cpus": 5,
+                        "options": parse_options()
                     }
-                    nextflow.launch_workflow(params_text, config_json["chargegroup"])
+                    nextflow.launch_workflow(
+                        params_text,
+                        config_json["chargegroup"],
+                        config_json["compute_queue"],
+                    )
                 except Exception as e:
                     pass
-                    # socketio.emit(
-                    #     "message",
-                    #     json.dumps(
-                    #         {
-                    #             "username": g.user_info["username"],
-                    #             "type": "Error",
-                    #             "message": str(e),
-                    #         }
-                    #     ),
-                    # )
+                    socketio.emit(
+                        "message",
+                        json.dumps(
+                            {
+                                "username": g.user_info["username"],
+                                "type": "Error",
+                                "message": str(e),
+                            }
+                        ),
+                    )
 
                 # train(run_config_name)
 

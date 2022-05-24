@@ -1,8 +1,8 @@
-import sys
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
 
-from dashboard import create_app
-
+from dashboard import create_app, socketio
 app = create_app()
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
+if __name__ == '__main__':
+    socketio.run(app)

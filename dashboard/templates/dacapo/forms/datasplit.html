@@ -10,7 +10,9 @@
     onsubmit="return submit_form('{{ url_for('dacapo.new_datasplit') }}', '{{ url_for('dacapo.create_new_run') }}', '{{ id_prefix }}')">
     {{ render_config_choice(fields, id_prefix, all_names) }}
     <input id="go_button" type="submit" value="Save" enabled>
-    <input type="button" id="go_button" value="Copy" enabled
+    <input type="button" value="Copy" enabled
         onclick="copy_form('{{ url_for('dacapo.new_datasplit') }}', '{{ id_prefix }}')">
+    <input type="button" value="Visualize" enabled
+        onclick="visualize_form('{{ url_for('dacapo.visualize_datasplit') }}', '{{ id_prefix }}')">
 </form>
 {% endblock %}

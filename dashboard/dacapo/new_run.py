@@ -74,6 +74,7 @@ def create_new_run():
     if request.method == "GET":
         context = get_checklist_data()
         context["chargegroup"] = chargegroup
+        context["compute_queue"] = "gpu_rtx"
         context["username"] = g.user_info["username"]
         return render_template("dacapo/new_run.html", **context)
 

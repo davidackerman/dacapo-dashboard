@@ -10,6 +10,7 @@ from flask import (
 
 from .blue_print import bp
 from dacapo.store.converter import converter
+from dacapo.experiments.datasplits import DataSplitConfig
 
 from .helpers import get_config_names
 from .configs import CONFIGURABLES, CONFIGURABLE_FIELDS
@@ -20,6 +21,8 @@ def new_datasplit():
     if request.method == "POST":
         try:
             data = request.json
+            structured = converter.structure(data, DataSplitConfig)
+            unstructured = converter.unstructure(structured)
             current_app.config["stores"].config.store_datasplit_config(data)
             return jsonify({"success": True})
         except Exception as e:
@@ -36,6 +39,18 @@ def new_datasplit():
             current_app.config["stores"].config.retrieve_datasplit_config_names()
         ),
     )
+
+@bp.route("/visualize_datasplit", methods=["GET", "POST"])
+def visualize_datasplit():
+    pass
+
+@bp.route("/visualize_datasplit/<state>", methods=["GET", "POST"])
+def visualize_datasplit_from_existing(state):
+    state = state.replace("%2F", "/")
+    json_config = json.loads(state)
+    config = converter.structure(json_config, DataSplitConfig)
+    datasplit = config.datasplit_type(config)
+    return redirect(datasplit._neuroglancer_link())
 
 
 @bp.route("/new_datasplit/<state>", methods=["GET"])
@@ -58,6 +73,7 @@ def new_datasplit_from_existing(state):
 def load_datasplit(name):
     config = current_app.config["stores"].config.retrieve_datasplit_config(name)
     state_dict = converter.unstructure(config)
+    print(state_dict)
     state = json.dumps(state_dict).replace("/", "%2F")
 
     return redirect(url_for("dacapo.new_datasplit_from_existing", state=state))

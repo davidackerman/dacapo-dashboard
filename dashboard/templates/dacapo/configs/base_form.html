@@ -22,11 +22,18 @@
         let form = document.getElementById(form_id);
         let config_data = getSubFormData(form);
         let encoded_json = JSON.stringify(config_data);
-        console.log(encoded_json);
         encoded_json = encodeURIComponent(encoded_json);
-        console.log(encoded_json);
         encoded_json = encoded_json.replaceAll("%2F", "%252F");
-        console.log(encoded_json);
+
+        var w = window.open(url + "/" + encoded_json);
+    };
+
+    function visualize_form(url, form_id) {
+        let form = document.getElementById(form_id);
+        let config_data = getSubFormData(form);
+        let encoded_json = JSON.stringify(config_data);
+        encoded_json = encodeURIComponent(encoded_json);
+        encoded_json = encoded_json.replaceAll("%2F", "%252F");
 
         var w = window.open(url + "/" + encoded_json);
     };
@@ -252,7 +259,23 @@
             }
 
         }
+        function replace_null_types(data) {
+
+            for (let key in data) {
+                if ((data[key] instanceof Object || data[key] instanceof Array ||
+                    typeof data[key] === 'object' || typeof data[key] === 'array')
+                    && data[key] !== null) {
+
+                    if ("__type__" in data[key] && data[key]["__type__"] === null){
+                        delete data[key]
+                    }
+                    replace_null_types(data[key])
+                }
+            }
+
+        }
         find_and_correct_dicts(data);
+        replace_null_types(data);
 
         return data;
     }
