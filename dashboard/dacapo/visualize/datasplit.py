@@ -13,5 +13,4 @@ def datasplit_visualization_link(datasplit: str):
 
 @bp.route("/datasplit/<datasplit>", methods=["GET"])
 def datasplit(datasplit):
-
     return redirect(datasplit_visualization_link(datasplit))

@@ -11,6 +11,7 @@ from .helpers import (
     get_evaluator_score_names,
 )
 from dacapo import train
+from dacapo.options import parse_options
 
 import itertools
 
@@ -118,9 +119,15 @@ def start_runs():
                     params_text = {
                         "run_name": run_config_name,
                         "cpus": 5,
+                        "options": parse_options()
                     }
-                    nextflow.launch_workflow(params_text, config_json["chargegroup"])
+                    nextflow.launch_workflow(
+                        params_text,
+                        config_json["chargegroup"],
+                        config_json["compute_queue"],
+                    )
                 except Exception as e:
+                    pass
                     socketio.emit(
                         "message",
                         json.dumps(

@@ -15,10 +15,9 @@ class Nextflow:
 
     # compute environment settings
     head_queue = "local"
-    compute_queue = "local"
 
     # workflow settings
-    pipeline_repo = f"https://github.com/davidackerman/dacapo-nextflow"
+    pipeline_repo = f"https://github.com/pattonw/dacapo-nextflow"
     revision = "main"
     config_profiles = ["lsf"]
     main_script = "dacapo.nf"
@@ -38,7 +37,7 @@ class Nextflow:
             res = self.check_token_validity()
             if res.status_code == 200:
                 res = self.set_login_node_credentials()
-                if res.status_code != 200:
+                if res is not None and res.status_code != 200:
                     self.verified = False
                     self.error_message = (
                         f'Invalid SSH Key. Response: {res.status_code}. {"Error message: "+res.json()["message"] if res.status_code in [400,409] else ""}',
@@ -66,6 +65,17 @@ class Nextflow:
         return res
 
     def set_login_node_credentials(self):
+        res = requests.get(
+            url=f"{self.nextflow_api}/credentials",
+            headers=self.headers,
+        )
+        if res.status_code != 200:
+            raise self.emit("Could not check existing credentials")
+        else:
+            credentials = res.json()["credentials"]
+            if any([credential.get("name") == "dacapo" for credential in credentials]):
+                return
+        
         credentials = {
             "credentials": {
                 "name": "dacapo",
@@ -93,12 +103,12 @@ class Nextflow:
 
         return credential_id
 
-    def set_compute_environment(self, chargegroup):
+    def set_compute_environment(self, chargegroup, compute_queue):
         workdir = expanduser(f"~{self.username}/") + ".dacapo/nextflow"
 
         compute_env = {
             "computeEnv": {
-                "name": f"dacapo_{chargegroup}",
+                "name": f"dacapo_{chargegroup}_{compute_queue}",
                 "platform": "lsf-platform",
                 "config": {
                     "userName": self.username,
@@ -106,7 +116,7 @@ class Nextflow:
                     "launchDir": workdir,
                     "hostName": self.host_name,
                     "headQueue": self.head_queue,
-                    "computeQueue": self.compute_queue,
+                    "computeQueue": compute_queue,
                     "headJobOptions": f"-P {chargegroup}",
                 },
                 "credentialsId": self.get_login_node_credentials(),
@@ -115,7 +125,8 @@ class Nextflow:
 
         self.emit(
             "Info",
-            f"Setting up first time compute environment for chargegroup {chargegroup}",
+            f"Setting up first time compute environment for chargegroup {chargegroup} "
+            f"and compute_queue {compute_queue}",
         )
 
         res = requests.post(
@@ -127,38 +138,41 @@ class Nextflow:
         if res.status_code != 200:
             self.emit(
                 "Error",
-                f'Failed setting up first time compute environment for chargegroup {chargegroup}.  Response: {res.status_code}. {"Error message: "+res.json()["message"] if res.status_code in [400,409] else ""}',
+                f"Failed setting up first time compute environment for chargegroup {chargegroup} "
+                f"and compute_queue {compute_queue}.  Response: {res.status_code}. "
+                f'{"Error message: "+res.json()["message"] if res.status_code in [400,409] else ""}',
             )
         else:
             self.emit(
                 "Success",
-                f"Set up first time compute environment for chargegroup {chargegroup}",
+                f"Set up first time compute environment for chargegroup {chargegroup} "
+                f"and compute_queue {compute_queue}",
             )
 
         return res
 
-    def get_or_set_compute_environment(self, chargegroup):
+    def get_or_set_compute_environment(self, chargegroup, compute_queue):
         res = requests.get(
             url=f"{self.nextflow_api}/compute-envs", headers=self.headers
         )
 
         compute_env_id = None
         for compute_env in res.json()["computeEnvs"]:
-            if compute_env["name"] == f"dacapo_{chargegroup}":
+            if compute_env["name"] == f"dacapo_{chargegroup}_{compute_queue}":
                 compute_env_id = compute_env["id"]
 
         if not compute_env_id:
-            res = self.set_compute_environment(chargegroup)
+            res = self.set_compute_environment(chargegroup, compute_queue)
             if res.status_code == 200:
                 compute_env_id = res.json()["computeEnvId"]
         return compute_env_id
 
-    def launch_workflow(self, params_text, chargegroup):
+    def launch_workflow(self, params_text, chargegroup, compute_queue):
         if not chargegroup:
             chargegroup = subprocess.getoutput(f"lsfgroup {self.username}")
 
-        params_text["lsf_opts"] = f"-P {chargegroup}"
-        compute_env_id = self.get_or_set_compute_environment(chargegroup)
+        params_text["lsf_opts"] = f'-P {chargegroup} -gpu "num=1"'
+        compute_env_id = self.get_or_set_compute_environment(chargegroup, compute_queue)
         if compute_env_id:
             workdir = expanduser(f"~{self.username}/") + ".dacapo/nextflow"
             workflow = {
